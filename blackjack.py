@@ -25,6 +25,11 @@ pygame.display.set_caption("Blackjack")
 collision_group = pygame.sprite.Group()
 score = 0  # Global counter
 
+# Card Class
+class Card(pygame.sprite.Sprite):
+    def __init__():
+        pass
+
 # Main loop
 running = True
 game_paused = False
