@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 print("Let's go gambling!!!")
 print("Bryce")
 print("Elijah")
 
 <<<<<<< Updated upstream
 =======
+=======
+
+>>>>>>> bryce
 import pygame
 import math
 import random
@@ -24,12 +28,17 @@ debugging = False
 # Create surfaces
 base_surface = pygame.Surface( (BASE_WIDTH, BASE_HEIGHT) )
 window = pygame.display.set_mode((1280, 720))
+<<<<<<< HEAD
 pygame.display.set_caption("Super Blackjack 9000")
+=======
+pygame.display.set_caption("Blackjack")
+>>>>>>> bryce
 
 # Create sprite groups
 collision_group = pygame.sprite.Group()
 score = 0  # Global counter
 
+<<<<<<< HEAD
 # # Basic snake segment class
 # class Segment(pygame.sprite.Sprite):
 #     def __init__(self, _x, _y):
@@ -138,6 +147,8 @@ score = 0  # Global counter
 #                 global game_paused
 #                 game_paused = True
 
+=======
+>>>>>>> bryce
 # Main loop
 running = True
 game_paused = False
@@ -162,6 +173,7 @@ while running:
     # Fill color
     base_surface.fill( (29, 71, 46) )
 
+<<<<<<< HEAD
     if game_paused == False:
         text_surface = font.render(f"Score: {score}", True, "white")
         base_surface.blit(text_surface, (140, 10))
@@ -176,6 +188,11 @@ while running:
     # DRAW HERE
     for entity in entityList:
         if game_paused == False:
+=======
+    # DRAW HERE
+    for entity in entityList:
+        if not game_paused:
+>>>>>>> bryce
             entity.update()
 
         entity.draw()
@@ -190,5 +207,9 @@ while running:
     # Limit the FPS to 60
     clock.tick(60)
 
+<<<<<<< HEAD
 pygame.quit()
 >>>>>>> Stashed changes
+=======
+pygame.quit()
+>>>>>>> bryce
