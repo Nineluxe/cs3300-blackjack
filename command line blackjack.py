@@ -49,6 +49,8 @@ class Card:
 class Hand():
     #Parameters:
     #Flag, an int(0-1) indicating whether the hand belongs to a player or a CPU
+    #Flag = 1: Player hand
+    #Flag = 0: CPU hand
     def __init__(self, flag):
         self.hand = []
         self.flag = flag
@@ -56,21 +58,34 @@ class Hand():
     #Iterates through hand array, calling each card's nicePrint function
     #And displays total score of hand
     def displayHand(self):
-        print("Current hand:")
-        if self.hand == []:
-            print("Empty")
-        else:
-            for card in self.hand:
-                card.nicePrint()
-            print("Current score: " + str(self.getHandScore()) + "\n")
-    
+        #For player hands
+        if self.flag == 1:
+            print("Your current hand:")
+            if self.hand == []:
+                print("Empty")
+            else:
+                for card in self.hand:
+                    card.nicePrint()
+                print("Your current score: " + str(self.getHandScore()) + "\n")
+
+        #For CPU hands
+        elif self.flag == 0:
+            print("Current CPU hand:")
+            if self.hand == []:
+                print("Empty")
+            else:
+                for card in self.hand:
+                    card.nicePrint()
+                print("Current CPU score: " + str(self.getHandScore()) + "\n")
+                
     #Gets and displays final score, with appropriate fanfare
-    def finalScore(self):
+    def finalScore(self, otherHand):
         score = self.getHandScore()
-        print("\nFinal score is : " + str(score))
-        if score < 21:
+        CPUScore = otherHand.getHandScore()
+        print("Final score is : " + str(score))
+        if (score > CPUScore or CPUScore > 21) and score <= 21:
             print("You win!")
-        elif score > 21:
+        elif score > 21 or (score < CPUScore and CPUScore <= 21):
             print("You lose! Good DAY SIR!")
         else:
             print("You got an invalid score. Congratulations, that shouldn't be possible!")
@@ -84,15 +99,24 @@ class Hand():
     
     #Lets user draw cards until they decide to stop
     #Probably needs a better name
+    #It'd be nice to find a way to have the player and CPU alternate drawing, maybe by passing in both hands at once?
     def playing(self, deck):
-        hitting = True
-        while hitting == True:
-            self.displayHand()
-            choice = input("Enter 1 to hit or anything else to pass: ").strip()
-            if choice == "1":
+        #For players
+        if self.flag == 1:
+            hitting = True
+            while hitting == True:
+                self.displayHand()
+                choice = input("Enter 1 to hit or anything else to pass: ").strip()
+                if choice == "1":
+                    self.hand.append(draw(deck))
+                else:
+                    hitting = False
+
+        #For CPUs
+        elif self.flag == 0:
+            while self.getHandScore() < 17:
                 self.hand.append(draw(deck))
-            else:
-                hitting = False
+                self.displayHand()
 #End of Hand class
 
 #Gets a random valid index from the given deck array, and removes it
@@ -101,9 +125,6 @@ class Hand():
 def draw(deck):
     index = random.randrange(len(deck))
     return deck.pop(index)
-
-
-
 
 def main():
     testDeck = []
@@ -116,8 +137,9 @@ def main():
     yourHand = Hand(1)
     CPUHand = Hand(0)
 
-    yourHand.playing( testDeck)
-    yourHand.finalScore()
+    yourHand.playing(testDeck)
+    CPUHand.playing(testDeck)
+    yourHand.finalScore(CPUHand)
 
 #end of Main
 
