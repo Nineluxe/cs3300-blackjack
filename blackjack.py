@@ -19,7 +19,7 @@ debugging = False
 # Create surfaces
 base_surface = pygame.Surface( (BASE_WIDTH, BASE_HEIGHT) )
 window = pygame.display.set_mode((1280, 720))
-pygame.display.set_caption("Blackjack")
+pygame.display.set_caption("Super Blackjack 9000")
 
 # Create sprite groups
 collision_group = pygame.sprite.Group()
@@ -70,5 +70,5 @@ while running:
 
     # Limit the FPS to 60
     clock.tick(60)
-
 pygame.quit()
+
