@@ -81,6 +81,18 @@ class Hand():
         for card in self.hand:
             score += card.getScoreValue()
         return score
+    
+    #Lets user draw cards until they decide to stop
+    #Probably needs a better name
+    def playing(self, deck):
+        hitting = True
+        while hitting == True:
+            self.displayHand()
+            choice = input("Enter 1 to hit or anything else to pass: ").strip()
+            if choice == "1":
+                self.hand.append(draw(deck))
+            else:
+                hitting = False
 #End of Hand class
 
 #Gets a random valid index from the given deck array, and removes it
@@ -90,18 +102,7 @@ def draw(deck):
     index = random.randrange(len(deck))
     return deck.pop(index)
 
-#Lets user draw cards until they decide to stop
-#Probably needs a better name and also to be put into a class like Game
-#Had to change parameter name to handOCards to remove a hand.hand for the append, cause thats stupid and horrible
-def playing(handOfCards, deck):
-    hitting = True
-    while hitting == True:
-        handOfCards.displayHand()
-        choice = input("Enter 1 to hit or anything else to pass: ").strip()
-        if choice == "1":
-            handOfCards.hand.append(draw(deck))
-        else:
-            hitting = False
+
 
 
 def main():
@@ -115,7 +116,7 @@ def main():
     yourHand = Hand(1)
     CPUHand = Hand(0)
 
-    playing(yourHand, testDeck)
+    yourHand.playing( testDeck)
     yourHand.finalScore()
 
 #end of Main
