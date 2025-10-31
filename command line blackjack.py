@@ -59,7 +59,7 @@ def displayHand(hand):
     else:
         for card in hand:
             card.nicePrint()
-        print("Current score: " + str(getHandScore(hand)))
+        print("Current score: " + str(getHandScore(hand)) + "\n")
 
 #This, displayHand() and draw() should probably be moved to a class, like Hand or Game or something
 #Gets the sum of the score of all cards in hand
@@ -68,6 +68,29 @@ def getHandScore(hand):
     for card in hand:
         score += card.getScoreValue()
     return score
+
+#Lets user draw cards until they decide to stop
+#Probably needs a better name and also to be put into a class like Game
+def playing(hand, deck):
+    hitting = True
+    while hitting == True:
+        displayHand(hand)
+        choice = input("Enter 1 to hit or anything else to pass: ").strip()
+        if choice == "1":
+            hand.append(draw(deck))
+        else:
+            hitting = False
+
+#Gets and displays final score, with appropriate fanfare
+def finalScore(hand):
+    score = getHandScore(hand)
+    print("\nFinal score is : " + str(score))
+    if score < 21:
+        print("You win!")
+    elif score > 21:
+        print("You lose! Good DAY SIR!")
+    else:
+        print("You got an invalid score. Congratulations, that shouldn't be possible!")
 
 def main():
     testDeck = []
@@ -78,15 +101,8 @@ def main():
             testDeck.append(Card(j, i))
 
     hand = []
-
-    hitting = True
-    while hitting == True:
-        displayHand(hand)
-        choice = input("Enter 1 to hit or anything else to pass: ").strip()
-        if choice == "1":
-            hand.append(draw(testDeck))
-        else:
-            hitting = False
+    playing(hand, testDeck)
+    finalScore(hand)
 
 #end of Main
 
