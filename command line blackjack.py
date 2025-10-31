@@ -7,6 +7,9 @@ class Card:
     #String array of names of cards for displaying
     names = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"]
 
+    #Parameters:
+    #Value, an int(1-15) representing the card's index in the names array and will also be modified and used for the card's scoring value
+    #suitNum, an int(0-3) representing the card's index in the suits array 
     def __init__(self, value, suitNum):
         self.value = value
         self.suit = Card.suits[suitNum]
@@ -43,6 +46,43 @@ class Card:
 
 #End of Card Class
 
+class Hand():
+    #Parameters:
+    #Flag, an int(0-1) indicating whether the hand belongs to a player or a CPU
+    def __init__(self, flag):
+        self.hand = []
+        self.flag = flag
+
+    #Iterates through hand array, calling each card's nicePrint function
+    #And displays total score of hand
+    def displayHand(self):
+        print("Current hand:")
+        if self.hand == []:
+            print("Empty")
+        else:
+            for card in self.hand:
+                card.nicePrint()
+            print("Current score: " + str(self.getHandScore()) + "\n")
+    
+    #Gets and displays final score, with appropriate fanfare
+    def finalScore(self):
+        score = self.getHandScore()
+        print("\nFinal score is : " + str(score))
+        if score < 21:
+            print("You win!")
+        elif score > 21:
+            print("You lose! Good DAY SIR!")
+        else:
+            print("You got an invalid score. Congratulations, that shouldn't be possible!")
+
+    #Gets the sum of the score of all cards in hand
+    def getHandScore(self):
+        score = 0
+        for card in self.hand:
+            score += card.getScoreValue()
+        return score
+#End of Hand class
+
 #Gets a random valid index from the given deck array, and removes it
 #Returning it to be appended to a hand array
 #Could be added to a Player class or something
@@ -50,47 +90,19 @@ def draw(deck):
     index = random.randrange(len(deck))
     return deck.pop(index)
 
-#Iterates through hand array, calling each card's nicePrint function
-#And displays total score of hand
-def displayHand(hand):
-    print("Current hand:")
-    if hand == []:
-        print("Empty")
-    else:
-        for card in hand:
-            card.nicePrint()
-        print("Current score: " + str(getHandScore(hand)) + "\n")
-
-#This, displayHand() and draw() should probably be moved to a class, like Hand or Game or something
-#Gets the sum of the score of all cards in hand
-def getHandScore(hand):
-    score = 0
-    for card in hand:
-        score += card.getScoreValue()
-    return score
-
 #Lets user draw cards until they decide to stop
 #Probably needs a better name and also to be put into a class like Game
-def playing(hand, deck):
+#Had to change parameter name to handOCards to remove a hand.hand for the append, cause thats stupid and horrible
+def playing(handOfCards, deck):
     hitting = True
     while hitting == True:
-        displayHand(hand)
+        handOfCards.displayHand()
         choice = input("Enter 1 to hit or anything else to pass: ").strip()
         if choice == "1":
-            hand.append(draw(deck))
+            handOfCards.hand.append(draw(deck))
         else:
             hitting = False
 
-#Gets and displays final score, with appropriate fanfare
-def finalScore(hand):
-    score = getHandScore(hand)
-    print("\nFinal score is : " + str(score))
-    if score < 21:
-        print("You win!")
-    elif score > 21:
-        print("You lose! Good DAY SIR!")
-    else:
-        print("You got an invalid score. Congratulations, that shouldn't be possible!")
 
 def main():
     testDeck = []
@@ -100,9 +112,11 @@ def main():
         for j in range(1, 15):
             testDeck.append(Card(j, i))
 
-    hand = []
-    playing(hand, testDeck)
-    finalScore(hand)
+    yourHand = Hand(1)
+    CPUHand = Hand(0)
+
+    playing(yourHand, testDeck)
+    yourHand.finalScore()
 
 #end of Main
 
