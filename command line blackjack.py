@@ -3,12 +3,14 @@ import random
 class Card:
     #String array of suit names
     suits = ["Spades", "Clubs", "Hearts", "Diamonds"]
+
     #String array of names of cards for displaying
     names = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"]
 
     def __init__(self, value, suitNum):
         self.value = value
         self.suit = Card.suits[suitNum]
+
         #Have to make a seperate function to get the cards actual value for the game, 
         #since face cards and aces value don't match their index in the array unlike numbered cards
         self.scoreValue = self.generateScoreValue()
@@ -39,6 +41,10 @@ class Card:
     def nicePrint(self):
         print(Card.names[self.value -1] + " of " + self.suit)
 
-testCard = Card(random.randint(1, 14), random.randint(0, 3))
-testCard.nicePrint()
-print(testCard.getScoreValue())
+testDeck = []
+for i in range(4):
+    for j in range(1, 15):
+        testDeck.append(Card(j, i))
+
+for card in testDeck:
+    card.nicePrint()
