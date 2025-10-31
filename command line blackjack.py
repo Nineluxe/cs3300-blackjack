@@ -41,6 +41,20 @@ class Card:
     def nicePrint(self):
         print(Card.names[self.value -1] + " of " + self.suit)
 
+#End of Card Class
+
+#Gets a random valid index from the given deck array, and removes it
+#Returning it to be appended to a hand array
+#Could be added to a Player class or something
+def draw(deck):
+    index = random.randrange(len(deck))
+    return deck.pop(index)
+
+#Iterates through hand array, calling each card's nicePrint function
+def displayHand(hand):
+    for card in hand:
+        card.nicePrint()
+
 testDeck = []
 #i and j are in reverse order for the card initialization because doing it this way
 #orders them by suit, rather than by value.
@@ -49,13 +63,10 @@ for i in range(4):
         testDeck.append(Card(j, i))
 
 hand = []
-def draw(deck):
-    index = random.randrange(len(deck))
-
-    return deck.pop(index)
 
 hand.append(draw(testDeck))
 hand.append(draw(testDeck))
 hand.append(draw(testDeck))
-for card in hand:
-    card.nicePrint()
+
+displayHand(hand)
+
