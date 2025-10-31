@@ -55,18 +55,22 @@ def displayHand(hand):
     for card in hand:
         card.nicePrint()
 
-testDeck = []
-#i and j are in reverse order for the card initialization because doing it this way
-#orders them by suit, rather than by value.
-for i in range(4):
-    for j in range(1, 15):
-        testDeck.append(Card(j, i))
+def main():
+    testDeck = []
+    #i and j are in reverse order for the card initialization because doing it this way
+    #orders them by suit, rather than by value.
+    for i in range(4):
+        for j in range(1, 15):
+            testDeck.append(Card(j, i))
 
-hand = []
+    hand = []
 
-hand.append(draw(testDeck))
-hand.append(draw(testDeck))
-hand.append(draw(testDeck))
+    hand.append(draw(testDeck))
+    hand.append(draw(testDeck))
+    hand.append(draw(testDeck))
 
-displayHand(hand)
+    displayHand(hand)
+#end of Main
 
+if __name__ == "__main__":
+    main()
