@@ -18,11 +18,6 @@ class Card:
         #since face cards and aces value don't match their index in the array unlike numbered cards
         self.scoreValue = self.generateScoreValue()
 
-    def getValue(self):
-        return self.value
-    
-    def getSuit(self):
-        return self.suit
     
     #Gets the actual scoring value for the card
     #Note: Will likely need to add something to this for aces later, 
@@ -36,9 +31,6 @@ class Card:
         elif(self.value == 14): #Aces
             num = 11 
         return num
-    
-    def getScoreValue(self):
-        return self.scoreValue
     
     #Prints the cards name and value in the form of "Ace of Hearts"
     def nicePrint(self):
@@ -78,23 +70,12 @@ class Hand():
                     card.nicePrint()
                 print("Current CPU score: " + str(self.getHandScore()) + "\n")
                 
-    #Gets and displays final score, with appropriate fanfare
-    def finalScore(self, otherHand):
-        score = self.getHandScore()
-        CPUScore = otherHand.getHandScore()
-        print("Final score is : " + str(score))
-        if (score > CPUScore or CPUScore > 21) and score <= 21:
-            print("You win!")
-        elif score > 21 or (score < CPUScore and CPUScore <= 21):
-            print("You lose! Good DAY SIR!")
-        else:
-            print("You got an invalid score. Congratulations, that shouldn't be possible!")
 
     #Gets the sum of the score of all cards in hand
     def getHandScore(self):
         score = 0
         for card in self.hand:
-            score += card.getScoreValue()
+            score += card.scoreValue
         return score
     
     #Lets user draw cards until they decide to stop
@@ -117,9 +98,25 @@ class Hand():
             while self.getHandScore() < 17:
                 self.hand.append(draw(deck))
                 self.displayHand()
+
+    #Gets and displays final score, with appropriate fanfare
+    def finalScore(self, otherHand):
+        score = self.getHandScore()
+        CPUScore = otherHand.getHandScore()
+        print("Final score is : " + str(score))
+        
+        #Might want to split these conditions into seperate elif statements
+        #With unique win/lose statements ("CPU busts, you win!") or ("You and the CPU both busted!")
+        if (score > CPUScore or CPUScore > 21) and score <= 21:
+            print("You win!")
+        elif score > 21 or (score < CPUScore and CPUScore <= 21):
+            print("You lose! Good DAY SIR!")
+        else:
+            print("You got an invalid score. Congratulations, that shouldn't be possible!")
+            
 #End of Hand class
 
-#Gets a random valid index from the given deck array, and removes it
+#Gets a random valid index from the given deck array, and removes it,
 #Returning it to be appended to a hand array
 #Could be added to a Player class or something
 def draw(deck):
@@ -134,11 +131,15 @@ def main():
         for j in range(1, 15):
             testDeck.append(Card(j, i))
 
+    #Creates a player hand and a CPU hand
     yourHand = Hand(1)
     CPUHand = Hand(0)
 
+    #CPU and player draw cards until they're done
     yourHand.playing(testDeck)
     CPUHand.playing(testDeck)
+    
+    #Calculates final winner
     yourHand.finalScore(CPUHand)
 
 #end of Main
