@@ -51,9 +51,19 @@ def draw(deck):
     return deck.pop(index)
 
 #Iterates through hand array, calling each card's nicePrint function
+#And displays total score of hand
 def displayHand(hand):
+    print("Current hand:")
     for card in hand:
         card.nicePrint()
+    print("Current score: " + str(getHandScore(hand)))
+
+#Gets the sum of the score of all cards in hand
+def getHandScore(hand):
+    score = 0
+    for card in hand:
+        score += card.getScoreValue()
+    return score
 
 def main():
     testDeck = []
@@ -65,6 +75,7 @@ def main():
 
     hand = []
 
+    #Drawing three cards to hand
     hand.append(draw(testDeck))
     hand.append(draw(testDeck))
     hand.append(draw(testDeck))
