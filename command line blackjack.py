@@ -54,10 +54,14 @@ def draw(deck):
 #And displays total score of hand
 def displayHand(hand):
     print("Current hand:")
-    for card in hand:
-        card.nicePrint()
-    print("Current score: " + str(getHandScore(hand)))
+    if hand == []:
+        print("Empty")
+    else:
+        for card in hand:
+            card.nicePrint()
+        print("Current score: " + str(getHandScore(hand)))
 
+#This, displayHand() and draw() should probably be moved to a class, like Hand or Game or something
 #Gets the sum of the score of all cards in hand
 def getHandScore(hand):
     score = 0
@@ -75,12 +79,15 @@ def main():
 
     hand = []
 
-    #Drawing three cards to hand
-    hand.append(draw(testDeck))
-    hand.append(draw(testDeck))
-    hand.append(draw(testDeck))
+    hitting = True
+    while hitting == True:
+        displayHand(hand)
+        choice = input("Enter 1 to hit or anything else to pass: ").strip()
+        if choice == "1":
+            hand.append(draw(testDeck))
+        else:
+            hitting = False
 
-    displayHand(hand)
 #end of Main
 
 if __name__ == "__main__":
