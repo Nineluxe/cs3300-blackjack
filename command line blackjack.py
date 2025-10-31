@@ -42,9 +42,20 @@ class Card:
         print(Card.names[self.value -1] + " of " + self.suit)
 
 testDeck = []
+#i and j are in reverse order for the card initialization because doing it this way
+#orders them by suit, rather than by value.
 for i in range(4):
     for j in range(1, 15):
         testDeck.append(Card(j, i))
 
-for card in testDeck:
+hand = []
+def draw(deck):
+    index = random.randrange(len(deck))
+
+    return deck.pop(index)
+
+hand.append(draw(testDeck))
+hand.append(draw(testDeck))
+hand.append(draw(testDeck))
+for card in hand:
     card.nicePrint()
