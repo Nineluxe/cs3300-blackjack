@@ -24,6 +24,13 @@ font = pygame.font.Font("assets/fonts/dungeon-mode.ttf", fontSize)  # None = def
 mouse = pygame.mouse.get_pos()
 mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
 debugging = True
+running = True
+game_paused = False
+
+# Card types
+cardFaces = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+cardSuits = ['♠', '♣', '♥', '♦']
+cardBack = pygame.image.load("assets/pixelCardback.png")
 
 # Create surfaces
 base_surface = pygame.Surface( (BASE_WIDTH, BASE_HEIGHT) )
@@ -35,10 +42,16 @@ pygame.display.set_caption("Super Blackjack 9000")
 class Card:
 
     ###### INITIALIZATION ######
-    def __init__(self, x, y, w=60, h=100, faceText="A", suitChar="♥",
+    def __init__(self, x, y, faceText="A", suitChar="♥",
                  fillColor=WHITE, borderColor=BLACK, borderWidth=2, cornerRadius=2):
+        
+        # Functional properties
+        self.score = self.getScore(faceText)
+
+        # Drawing properties
+        self.isFaceUp = False
         self.x, self.y = x, y
-        self.w, self.h = w, h
+        self.w, self.h = 60, 100
         self.faceText = faceText
         self.suitChar = suitChar
         self.fillColor = fillColor
@@ -46,8 +59,29 @@ class Card:
         self.borderWidth = borderWidth
         self.cornerRadius = cornerRadius
 
+    ###### GET SCORE METHOD ######
+    def getScore(self, faceText):
+        if faceText in ['J', 'Q', 'K']:
+            return 10
+        elif faceText == 'A':
+            return 11
+        else:
+            return int(faceText)
+    
+    ###### TO STRING METHOD ######
+    def toString(self):
+        return f"{self.faceText} of {self.suitChar} (Score: {self.score})"
+    
     ###### DRAW METHOD ######
     def draw(self, surface):
+
+        # Draw back of card if face down
+        if not self.isFaceUp:
+
+            surface.blit(cardBack, (self.x, self.y))
+            return
+        
+        # Card rectangle
         rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
         # shadow
@@ -71,26 +105,36 @@ class Card:
         centerSuit = font.render(self.suitChar, False, rankColor)
         surface.blit(centerSuit, centerSuit.get_rect(center=rect.center))
 
+###################### PLAYER CLASS ####################
+class Player:
 
-###################### CREATE CARDS ####################
-cards = [
-    Card(40, 20, faceText="A", suitChar="♥")
-]
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+        self.score = 0
+    
+    def addCard(self, card):
+        self.hand.append(card)
+        self.updateScore()
 
+    def updateScore(self):
+        self.score = sum(card.score for card in self.hand)
+
+    def destroyCard(self, card):
+        if card in self.hand:
+            self.hand.remove(card)
+            self.updateScore()  
+
+###################### HAND ####################
+user = Player("User")
+dealer = Player("Dealer")
+
+# Creates a card object and returns it
 def createCard(x, y, faceText, suitChar):
-
-    # Create new card and add to list
-    newCard = Card(x, y, faceText=faceText, suitChar=suitChar)
-    cards.append(newCard)
-
-    return newCard
-
-def destroyCard(card):
-    if card in cards:
-        cards.remove(card)
-
+    return Card(x, y, faceText, suitChar)
 
 ###################### CONTROLS ####################
+
 def processControls():
     
     for event in pygame.event.get():
@@ -105,6 +149,9 @@ def processControls():
                 fontSize = max(1, fontSize - 1)
                 font = pygame.font.Font("assets/fonts/dungeon-mode-inverted.ttf", fontSize)
                 print("Font size:", fontSize)
+            
+            if event.key == pygame.K_0:
+                user.addCard(createCard(50, 50, 'A', '♠'))
 
         # Debug: Quit game
         if event.type == pygame.QUIT:
@@ -118,8 +165,7 @@ def processControls():
 
 
 #################### MAIN LOOP ####################
-running = True
-game_paused = False
+
 while running:
     
     # Handle controls
@@ -129,9 +175,13 @@ while running:
     base_surface.fill( (29, 71, 46) )
 
     # Draw cards
-    for c in cards:
-        c.draw(base_surface)
+    for card in user.hand:
+        card.draw(base_surface)
 
+    for card in dealer.hand:
+        card.draw(base_surface)
+
+    surface.draw
     # Scale and blit to window
     scaled_surface = pygame.transform.scale(base_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
     window.blit(scaled_surface, (0, 0))
