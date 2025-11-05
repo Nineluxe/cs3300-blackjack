@@ -3,10 +3,15 @@ import pygame
 import math
 import random
 
-# Define constants
+#################### CONSTANTS ####################
 BASE_WIDTH, BASE_HEIGHT = 640, 360
 SCALE = 2
 WINDOW_WIDTH, WINDOW_HEIGHT = BASE_WIDTH * SCALE, BASE_HEIGHT * SCALE
+WHITE = (250, 250, 250)
+BLACK = (20, 20, 20)
+RED = (210, 30, 45)
+SHADOW = (0, 0, 0, 90)
+TABLE = (6, 105, 75)
 
 #################### INITIALIZATION ####################
 pygame.init()
@@ -16,22 +21,14 @@ pygame.font.init()
 
 fontSize = 9
 font = pygame.font.Font("assets/fonts/dungeon-mode.ttf", fontSize)  # None = default system font, 24 = size
-
-debugging = False
+mouse = pygame.mouse.get_pos()
+mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
+debugging = True
 
 # Create surfaces
 base_surface = pygame.Surface( (BASE_WIDTH, BASE_HEIGHT) )
-window = pygame.display.set_mode((1280, 720))
+window = pygame.display.set_mode((BASE_WIDTH * SCALE, BASE_HEIGHT * SCALE))
 pygame.display.set_caption("Super Blackjack 9000")
-
-###################### COLORS ####################
-WHITE = (250, 250, 250)
-BLACK = (20, 20, 20)
-RED = (210, 30, 45)
-SHADOW = (0, 0, 0, 90)
-TABLE = (6, 105, 75)
-
-###################### SHAPES ####################
 
 
 ###################### CARD CLASS ####################
@@ -48,10 +45,6 @@ class Card:
         self.borderColor = borderColor
         self.borderWidth = borderWidth
         self.cornerRadius = cornerRadius
-
-        # font sizes relative to card height
-        #self.rankFont = font #pygame.font.SysFont(None, max(18, h // 5))
-        #self.suitFont = font #pygame.font.SysFont(None, max(18, h // 5))
 
     ###### DRAW METHOD ######
     def draw(self, surface):
@@ -78,25 +71,28 @@ class Card:
         centerSuit = font.render(self.suitChar, False, rankColor)
         surface.blit(centerSuit, centerSuit.get_rect(center=rect.center))
 
-        # tiny rotated corner (optional flair)
-        #smallRank = pygame.transform.rotate(rankText, 180)
-        #smallSuit = pygame.transform.rotate(suitText, 180)
-        #surface.blit(smallRank, (self.x + self.w - 8 - smallRank.get_width(),
-                                 #self.y + self.h - 6 - smallRank.get_height() - smallSuit.get_height()))
-        #surface.blit(smallSuit, (self.x + self.w - 8 - smallSuit.get_width(),
-                                 #self.y + self.h - 6 - smallSuit.get_height()))
 
 ###################### CREATE CARDS ####################
 cards = [
     Card(40, 20, faceText="A", suitChar="♥")
 ]
 
-#################### MAIN LOOP ####################
-running = True
-game_paused = False
-while running:
+def createCard(x, y, faceText, suitChar):
+
+    # Create new card and add to list
+    newCard = Card(x, y, faceText=faceText, suitChar=suitChar)
+    cards.append(newCard)
+
+    return newCard
+
+def destroyCard(card):
+    if card in cards:
+        cards.remove(card)
+
+
+###################### CONTROLS ####################
+def processControls():
     
-    ###### CONTROLS ######
     for event in pygame.event.get():
 
         # Controls: Change size
@@ -113,18 +109,26 @@ while running:
         # Debug: Quit game
         if event.type == pygame.QUIT:
             pygame.quit()
-      
-    # Get key states
-    keys = pygame.key.get_pressed()
+            running = False
+            exit()
 
     # Get mouse position and scale it based on window size
     mouse = pygame.mouse.get_pos()
     mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
 
+
+#################### MAIN LOOP ####################
+running = True
+game_paused = False
+while running:
+    
+    # Handle controls
+    processControls()
+
     # Draw background
     base_surface.fill( (29, 71, 46) )
 
-
+    # Draw cards
     for c in cards:
         c.draw(base_surface)
 
@@ -137,5 +141,6 @@ while running:
 
     # Limit the FPS to 60
     clock.tick(60)
+    
 pygame.quit()
 
