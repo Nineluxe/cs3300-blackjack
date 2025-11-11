@@ -126,6 +126,66 @@ class Card:
         surface.blit(centerSuit, centerSuit.get_rect(center=rect.center))
 
 
+
+###################### BUTTON CLASS ######################
+class Button(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, imagePath, text=""):
+        super().__init__()
+
+        # Button properties would go here
+        self.x = x
+        self.y = y
+             
+        # Create the hitbox from the image
+        self.w = cardWidth
+        self.h = cardHeight
+        self.text = text
+        self.image = pygame.image.load(imagePath).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.x += self.x
+        self.rect.y += self.y
+        self.shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+        self.doDrawShadow = True
+
+        # Add button to drawables for drawing
+        drawables.append(self)
+
+    # Check if mouse is over button
+    def isMouseOver(self, mousePos):
+        return self.rect.collidepoint(mousePos)
+    
+    # Draw method
+    def draw(self, surface):
+
+        # shadow
+        if self.doDrawShadow:
+            shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+            pygame.draw.rect(shadowSurf, SHADOW, shadowSurf.get_rect(), border_radius=4)
+            surface.blit(shadowSurf, (self.x + 6, self.y + 6))
+
+        # draw button image
+        surface.blit(self.image, (self.x, self.y))
+
+        # text
+        if self.text != "":
+            xpos = self.x + self.w // 2
+            ypos = self.y + self.h + 10
+            shadowSurf = uiFont.render(self.text, True, (0, 0, 0))
+            shadowRect = shadowSurf.get_rect(center=(xpos, ypos + 2))
+            surface.blit(shadowSurf, shadowRect)
+
+            textSurf = uiFont.render(self.text, True, WHITE)
+            textRect = textSurf.get_rect(center=(xpos, ypos))
+            surface.blit(textSurf, textRect)
+        
+        if debugging:
+            pass
+            #pygame.draw.rect(surface, RED, self.rect, 1)
+
+# Initialize deck button
+deck = Button(BASE_WIDTH - (cardWidth + 20), 20, "assets/pixelCardback.png", "Hit me!")
+
 ###################### GAME CLASS ######################
 class Game:    
 
@@ -149,6 +209,10 @@ class Game:
             for face in cardFaces:
                 newCard = Card(0, 0, face, suit)
                 self.deck.append(newCard)
+
+        # It literally did not feel shuffled enough
+        random.shuffle(self.deck)
+        random.shuffle(self.deck)
         random.shuffle(self.deck)
 
 
@@ -211,11 +275,15 @@ def drawDeckCard(x, y):
     newCard.y = y
     return newCard
 
-###################### CONTROLS ####################
-def processControls():
 
-    global user, dealer
+#################### MAIN LOOP ####################
+while running:
 
+    # Get mouse position and scale it based on window size
+    mouse = pygame.mouse.get_pos()
+    mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
+
+    # Handle events
     for event in pygame.event.get():
 
         # Controls: Change size
@@ -236,20 +304,18 @@ def processControls():
                 xPos = user.handPosition[0]
                 yPos = user.handPosition[1]
                 user.addCard(drawDeckCard(xPos, yPos))
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            
+            if deck.isMouseOver(mouse_scaled):
+                xPos = deck.x
+                yPos = deck.y
+                user.addCard(drawDeckCard(xPos, yPos))
 
         # Debug: Quit game
         if event.type == pygame.QUIT:
             pygame.quit()
-            running = False
             exit()
-
-
-
-#################### MAIN LOOP ####################
-while running:
-    
-    # Handle controls
-    processControls()
 
     # Draw background
     base_surface.fill( (29, 71, 46) )
@@ -268,9 +334,9 @@ while running:
     user.drawScore(base_surface, 10, BASE_HEIGHT - 30)
     dealer.drawScore(base_surface, BASE_WIDTH - 150, 10)
 
-    # Get mouse position and scale it based on window size
-    mouse = pygame.mouse.get_pos()
-    mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
+    if debugging:
+        mousePosText = uiFont.render(f"Mouse: {mouse_scaled[0]:.1f}, {mouse_scaled[1]:.1f}", True, WHITE)
+        base_surface.blit(mousePosText, (10, 10))
 
     # Scale and blit to window
     scaled_surface = pygame.transform.scale(base_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
