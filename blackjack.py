@@ -125,6 +125,20 @@ class Card:
         centerSuit = cardFont.render(self.suitChar, False, rankColor)
         surface.blit(centerSuit, centerSuit.get_rect(center=rect.center))
 
+###################### POPUP CLASS ######################
+class Popup:
+    def __init__(self, text):
+        self.text = text
+
+    def draw(self, surface):
+        popup_surf = uiFont.render(self.text, True, WHITE)
+        rect = popup_surf.get_rect(center=(BASE_WIDTH // 2, BASE_HEIGHT // 2))
+
+        # background box
+        pygame.draw.rect(surface, BLACK, rect.inflate(20, 20), border_radius=8)
+
+        # draw text
+        surface.blit(popup_surf, rect)
 
 
 ###################### BUTTON CLASS ######################
@@ -186,7 +200,6 @@ class Button(pygame.sprite.Sprite):
             surface.blit(temp, (self.x, self.y))
             return
 
-        
         if debugging:
             pass
             #pygame.draw.rect(surface, RED, self.rect, 1)
@@ -224,6 +237,21 @@ class Game:
         random.shuffle(self.deck)
         random.shuffle(self.deck)
 
+    def winner(self):
+        if user.score > 21 and dealer.score <= 21:
+            return "You busted! Dealer wins!"
+        elif dealer.score > 21 and user.score <= 21:
+            return "Dealer busted! You win!"
+        elif user.score > dealer.score:
+            return "You win!"
+        elif dealer.score > user.score:
+            return "Dealer wins!"
+        elif user.score == dealer.score:
+            return "It's a tie!"
+        elif user.score > 21 and dealer.score > 21:
+            return "Both players busted! No winner!"
+        else:
+            return "Error in determining winner."
 
 ###################### PLAYER CLASS ####################
 class Player:
@@ -294,12 +322,15 @@ def drawDeckCard(x, y):
 
 
 #################### MAIN LOOP ####################
+winner_popup = None
+round_over = False
+
 while running:
 
     # Get mouse position and scale it based on window size
     mouse = pygame.mouse.get_pos()
     mouse_scaled = (mouse[0] / SCALE, mouse[1] / SCALE)
-
+    
     # Handle events
     for event in pygame.event.get():
 
@@ -336,6 +367,7 @@ while running:
                 xPos = deck.x
                 yPos = deck.y
                 user.addCard(drawDeckCard(xPos, yPos))
+                #Dealer hits after every player hit as long as dealer score is below threshold
                 if dealer.score < 17:
                     dealer.addCard(drawDeckCard(dealer.handPosition[0], dealer.handPosition[1]))
 
@@ -343,11 +375,16 @@ while running:
             if stand_Button.isMouseOver(mouse_scaled):
                 game.playerCanHit = False
 
-            if not game.playerCanHit:
-                # Dealer draws until score is at least 17
+            #Dealer finishes turn only once
+            if not game.playerCanHit and not round_over:
+
+                # Dealer hits until 17+
                 while dealer.score < 17:
                     dealer.addCard(drawDeckCard(dealer.handPosition[0], dealer.handPosition[1]))
 
+                # round ends → create popup
+                winner_popup = Popup(game.winner())
+                round_over = True
 
     # Draw background
     base_surface.fill( (29, 71, 46) )
@@ -369,6 +406,10 @@ while running:
     if debugging:
         mousePosText = uiFont.render(f"Mouse: {mouse_scaled[0]:.1f}, {mouse_scaled[1]:.1f}", True, WHITE)
         base_surface.blit(mousePosText, (10, 10))
+    
+    # Draw popup if it exists
+    if winner_popup:    
+        winner_popup.draw(base_surface)
 
     # Scale and blit to window
     scaled_surface = pygame.transform.scale(base_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
