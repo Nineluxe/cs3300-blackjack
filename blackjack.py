@@ -143,26 +143,23 @@ class Popup:
 
 ###################### BUTTON CLASS ######################
 class Button(pygame.sprite.Sprite):
-
-    def __init__(self, x, y, imagePath, text=""):
+    def __init__(self, x, y, imagePath=None, text="", w=140, h=40):
         super().__init__()
-
-        # Button properties would go here
         self.x = x
         self.y = y
-             
-        # Create the hitbox from the image
-        self.w = cardWidth
-        self.h = cardHeight
+        self.w = w
+        self.h = h
         self.text = text
-        self.image = pygame.image.load(imagePath).convert_alpha()
-        self.rect = self.image.get_rect()
-        self.rect.x += self.x
-        self.rect.y += self.y
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
         self.shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
         self.doDrawShadow = True
 
-        # Add button to drawables for drawing
+        if imagePath:
+            self.image = pygame.image.load(imagePath).convert_alpha()
+            self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        else:
+            self.image = None
+
         drawables.append(self)
 
     # Check if mouse is over button
@@ -171,27 +168,26 @@ class Button(pygame.sprite.Sprite):
     
     # Draw method
     def draw(self, surface):
-
-        # shadow
+    # shadow
         if self.doDrawShadow:
             shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
-            pygame.draw.rect(shadowSurf, SHADOW, shadowSurf.get_rect(), border_radius=4)
+            pygame.draw.rect(shadowSurf, SHADOW, shadowSurf.get_rect(), border_radius=6)
             surface.blit(shadowSurf, (self.x + 6, self.y + 6))
 
-        # draw button image
-        surface.blit(self.image, (self.x, self.y))
+        # draw button image if available
+        if self.image:
+            surface.blit(self.image, (self.x, self.y))
+        else:
+            # draw plain rectangle
+            pygame.draw.rect(surface, BLACK, self.rect, border_radius=6)
+            pygame.draw.rect(surface, WHITE, self.rect, 2, border_radius=6)
 
-        # text
+        # draw text
         if self.text != "":
-            xpos = self.x + self.w // 2
-            ypos = self.y + self.h + 10
-            shadowSurf = uiFont.render(self.text, True, (0, 0, 0))
-            shadowRect = shadowSurf.get_rect(center=(xpos, ypos + 2))
-            surface.blit(shadowSurf, shadowRect)
+            surf = uiFont.render(self.text, True, WHITE)
+            text_rect = surf.get_rect(center=self.rect.center)
+            surface.blit(surf, text_rect)
 
-            textSurf = uiFont.render(self.text, True, WHITE)
-            textRect = textSurf.get_rect(center=(xpos, ypos))
-            surface.blit(textSurf, textRect)
 
         #Greys out hit button if player cannot hit
         if self.text == "Hit me!" and game.playerCanHit == False:
@@ -207,6 +203,9 @@ class Button(pygame.sprite.Sprite):
 # Initialize deck button
 deck = Button(BASE_WIDTH - (cardWidth + 20), 20, "assets/pixelCardback.png", "Hit me!")
 stand_Button = Button(BASE_WIDTH - (cardWidth + 20), 140, "assets/stand_button.png", "Stand")
+# Initialize play again button (removed from drawables until needed)
+play_again_button = Button(x=(BASE_WIDTH // 2) - 70, y=(BASE_HEIGHT // 2) + 40,text="Play Again")
+drawables.remove(play_again_button)
 ###################### GAME CLASS ######################
 class Game:    
 
@@ -386,6 +385,19 @@ while running:
                 winner_popup = Popup(game.winner())
                 round_over = True
 
+            # PLAY AGAIN
+            if round_over and play_again_button.isMouseOver(mouse_scaled):
+                user.hand.clear()
+                dealer.hand.clear()
+                dealer.score = 0
+                user.score = 0
+                drawables[:] = [deck, stand_Button, game]  # reset drawables
+                game.initializeDeck()
+                game.playerCanHit = True
+                round_over = False
+                winner_popup = None
+
+
     # Draw background
     base_surface.fill( (29, 71, 46) )
 
@@ -410,7 +422,8 @@ while running:
     # Draw popup if it exists
     if winner_popup:    
         winner_popup.draw(base_surface)
-
+        play_again_button.draw(base_surface)
+        
     # Scale and blit to window
     scaled_surface = pygame.transform.scale(base_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
     window.blit(scaled_surface, (0, 0))
