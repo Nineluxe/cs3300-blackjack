@@ -336,11 +336,17 @@ while running:
                 xPos = deck.x
                 yPos = deck.y
                 user.addCard(drawDeckCard(xPos, yPos))
+                if dealer.score < 17:
+                    dealer.addCard(drawDeckCard(dealer.handPosition[0], dealer.handPosition[1]))
 
             # STAND
             if stand_Button.isMouseOver(mouse_scaled):
                 game.playerCanHit = False
 
+            if not game.playerCanHit:
+                # Dealer draws until score is at least 17
+                while dealer.score < 17:
+                    dealer.addCard(drawDeckCard(dealer.handPosition[0], dealer.handPosition[1]))
 
 
     # Draw background
