@@ -241,10 +241,10 @@ class Game:
             return "You busted! Dealer wins!"
         elif dealer.score > 21 and user.score <= 21:
             return "Dealer busted! You win!"
-        elif user.score == dealer.score:
-            return "It's a tie!"
         elif user.score > 21 and dealer.score > 21:
             return "Both players busted! No winner!"
+        elif user.score == dealer.score:
+            return "It's a tie!"
         elif user.score > dealer.score:
             return "You win!"
         elif dealer.score > user.score:
@@ -423,7 +423,7 @@ while running:
     if winner_popup:    
         winner_popup.draw(base_surface)
         play_again_button.draw(base_surface)
-        
+
     # Scale and blit to window
     scaled_surface = pygame.transform.scale(base_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
     window.blit(scaled_surface, (0, 0))
