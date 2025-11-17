@@ -247,6 +247,14 @@ class Player:
 
     def updateScore(self):
         self.score = sum(card.score for card in self.hand)
+        #Check for aces and adjust score if over 21
+        if self.score > 21:
+            for card in self.hand:
+                if card.faceText == 'A' and card.score == 11:
+                    card.score = 1
+                    self.score -= 10
+                    if self.score <= 21:
+                        break
 
     def drawScore(self, surface, x, y):
         scoreText = uiFont.render(f"{self.name} Score: {self.score}", True, WHITE)
