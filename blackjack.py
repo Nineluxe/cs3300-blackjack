@@ -178,6 +178,14 @@ class Button(pygame.sprite.Sprite):
             textSurf = uiFont.render(self.text, True, WHITE)
             textRect = textSurf.get_rect(center=(xpos, ypos))
             surface.blit(textSurf, textRect)
+
+        #Greys out hit button if player cannot hit
+        if self.text == "Hit me!" and game.playerCanHit == False:
+            temp = self.image.copy()
+            temp.fill((50, 50, 50, 120), None, pygame.BLEND_RGBA_MULT)
+            surface.blit(temp, (self.x, self.y))
+            return
+
         
         if debugging:
             pass
@@ -185,7 +193,7 @@ class Button(pygame.sprite.Sprite):
 
 # Initialize deck button
 deck = Button(BASE_WIDTH - (cardWidth + 20), 20, "assets/pixelCardback.png", "Hit me!")
-
+stand_Button = Button(BASE_WIDTH - (cardWidth + 20), 140, "assets/stand_button.png", "Stand")
 ###################### GAME CLASS ######################
 class Game:    
 
@@ -194,6 +202,7 @@ class Game:
         self.y = BASE_HEIGHT + (cardHeight + 20)
         self.deck = []
         self.initializeDeck()
+        self.playerCanHit = True
 
         # Add deck to drawables for drawing
         drawables.append(self)
@@ -294,6 +303,13 @@ while running:
     # Handle events
     for event in pygame.event.get():
 
+        # Debug: Quit game
+        #Moved this up here cause otherwise it wouldn't quit when hitting the X
+        if event.type == pygame.QUIT:
+            running
+            pygame.quit()
+            exit()
+
         # Controls: Change size
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
@@ -314,16 +330,18 @@ while running:
                 user.addCard(drawDeckCard(xPos, yPos))
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            
-            if deck.isMouseOver(mouse_scaled):
+
+            # HIT (only allowed if player_can_hit is True)
+            if game.playerCanHit and deck.isMouseOver(mouse_scaled):
                 xPos = deck.x
                 yPos = deck.y
                 user.addCard(drawDeckCard(xPos, yPos))
 
-        # Debug: Quit game
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+            # STAND
+            if stand_Button.isMouseOver(mouse_scaled):
+                game.playerCanHit = False
+
+
 
     # Draw background
     base_surface.fill( (29, 71, 46) )
@@ -357,4 +375,3 @@ while running:
     clock.tick(60)
     
 pygame.quit()
-
