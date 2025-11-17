@@ -242,14 +242,14 @@ class Game:
             return "You busted! Dealer wins!"
         elif dealer.score > 21 and user.score <= 21:
             return "Dealer busted! You win!"
-        elif user.score > dealer.score:
-            return "You win!"
-        elif dealer.score > user.score:
-            return "Dealer wins!"
         elif user.score == dealer.score:
             return "It's a tie!"
         elif user.score > 21 and dealer.score > 21:
             return "Both players busted! No winner!"
+        elif user.score > dealer.score:
+            return "You win!"
+        elif dealer.score > user.score:
+            return "Dealer wins!"
         else:
             return "Error in determining winner."
 
