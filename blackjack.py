@@ -143,7 +143,7 @@ class Popup:
 
 ###################### BUTTON CLASS ######################
 class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, imagePath=None, text="", w=140, h=40):
+    def __init__(self, x, y, imagePath=None, text="", textxOffset = 0, textyOffset = 0, w=140, h=40):
         super().__init__()
         self.x = x
         self.y = y
@@ -168,7 +168,7 @@ class Button(pygame.sprite.Sprite):
     
     # Draw method
     def draw(self, surface):
-    # shadow
+        # shadow
         if self.doDrawShadow:
             shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
             pygame.draw.rect(shadowSurf, SHADOW, shadowSurf.get_rect(), border_radius=6)
