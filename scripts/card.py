@@ -1,38 +1,36 @@
 # import pygame
 
 # ###################### CARD CLASS ####################
-# class Card:
+class Card:
 
-#     ###### INITIALIZATION ######
-#     def __init__(self, x, y, faceText="A", suitChar="♥",
-#                  fillColor=WHITE, borderColor=BLACK, borderWidth=2, cornerRadius=2):
+    def __init__(self, x, y, cardWidth, cardHeight, fillColor, borderColor, borderWidth, cornerRadius, faceText, suitChar):
 
-#         # Functional properties
-#         self.score = self.getScore(faceText)
+        # Functional properties
+        self.score = self.getScore(faceText)
 
-#         # Drawing properties
-#         self.x, self.y = x, y
-#         self.desiredX, self.desiredY = x, y
-#         self.w, self.h = cardWidth, cardHeight
+        # Drawing properties
+        self.x, self.y = x, y
+        self.desiredX, self.desiredY = x, y
+        self.w, self.h = cardWidth, cardHeight
 #         self.shadowSurf = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
 #         self.doDrawShadow = True
 #         self.shadowOffset = (6, 6)
-#         self.isFaceUp = True
-#         self.faceText = faceText
-#         self.suitChar = suitChar
-#         self.fillColor = fillColor
-#         self.borderColor = borderColor
-#         self.borderWidth = borderWidth
-#         self.cornerRadius = cornerRadius
+        self.isFaceUp = True
+        self.faceText = faceText
+        self.suitChar = suitChar
+        self.fillColor = fillColor
+        self.borderColor = borderColor
+        self.borderWidth = borderWidth
+        self.cornerRadius = cornerRadius
 
-#     ###### GET SCORE METHOD ######
-#     def getScore(self, faceText):
-#         if faceText in ['J', 'Q', 'K']:
-#             return 10
-#         elif faceText == 'A':
-#             return 11
-#         else:
-#             return int(faceText)
+    # Get the score value of the current card
+    def getScore(self, faceText):
+        if faceText in ['J', 'Q', 'K']:
+            return 10
+        elif faceText == 'A':
+            return 11
+        else:
+            return int(faceText)
     
 #     ###### TO STRING METHOD ######
 #     def toString(self):

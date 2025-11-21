@@ -9,7 +9,6 @@ from scripts.gameController import GameController
 pygame.init()
 pygame.font.init()
 game = GameController()
-game.initialize()
 
 # UPDATE: Called every frame
 while (game.isRunning):

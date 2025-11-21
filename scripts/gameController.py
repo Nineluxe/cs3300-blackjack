@@ -1,31 +1,45 @@
 
 import pygame
+from .blackjackController import BlackjackController
 
 # The game controller handles display, blackjack logic, and asset loading
 class GameController():
 
     # CONSTANTS: Unchanging variables that do not rely on anything else
-    BASE_WIDTH, BASE_HEIGHT = 640, 360
-    SCALE = 2
-    WINDOW_WIDTH, WINDOW_HEIGHT = BASE_WIDTH * SCALE, BASE_HEIGHT * SCALE
-    WHITE_COLOR = (250, 250, 250)
-    BLACK_COLOR = (20, 20, 20)
-    RED_COLOR = (210, 30, 45)
-    SHADOW_COLOR = (0, 0, 0, 90)
-    TABLE_COLOR = (29, 71, 46)
+    DISPLAY = {
+        "GAME_SIZE" : (640, 360),
+        "SCALE" : 2,
+        "WINDOW_WIDTH" : 1280, 
+        "WINDOW_HEIGHT" : 720,
+        "WHITE_COLOR" : (250, 250, 250),
+        "BLACK_COLOR" : (20, 20, 20),
+        "RED_COLOR" : (210, 30, 45),
+        "SHADOW_COLOR" : (0, 0, 0, 90),
+        "TABLE_COLOR" : (29, 71, 46)
+    }
 
-    # INIT: Anything that requires other context needs to be initialized here
+    # INIT: Most variables should be defined here, only constants outside
     def __init__(self):
 
         # DISPLAY: Initialize the display
-        self.surface = pygame.Surface( (self.BASE_WIDTH, self.BASE_HEIGHT) )
-        self.scaledSurface = pygame.transform.scale(self.surface, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-        self.window = pygame.display.set_mode((self.BASE_WIDTH * self.SCALE, self.BASE_HEIGHT * self.SCALE))
+        self.surface = pygame.Surface( (self.DISPLAY["GAME_SIZE"][0], self.DISPLAY["GAME_SIZE"][1]) )
+        self.scaledSurface = pygame.transform.scale(self.surface, (self.DISPLAY["WINDOW_WIDTH"], self.DISPLAY["WINDOW_HEIGHT"]))
+        self.window = pygame.display.set_mode((self.DISPLAY["GAME_SIZE"][0] * self.DISPLAY["SCALE"], self.DISPLAY["GAME_SIZE"][1] * self.DISPLAY["SCALE"]))
         pygame.display.set_caption("Blackjack")
+
+        # ASSETS: Initialize the assets
+        self.fontAssets = dict()
+        self.imageAssets = dict()
+        self.fontAssets["cardFont"] =  pygame.font.Font("assets/fonts/dungeon-mode.ttf", 9)
+        self.fontAssets["uiFont"] = pygame.font.Font("assets/fonts/monogram-extended.ttf", 16)
+        self.imageAssets["cardBack"] = pygame.image.load("assets/pixelCardback.png").convert_alpha()
+
+        # CONTROLLER: Initialize the blackjack game controller
+        self.blackjack = BlackjackController(self.DISPLAY, self.imageAssets["cardBack"])
 
         # CONTROLS: Reading controls
         self.mouse = pygame.mouse.get_pos()
-        self.mouseScaled = (self.mouse[0] / self.SCALE, self.mouse[1] / self.SCALE)
+        self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
         self.mousePressed = False
 
         # FUNCTIONAL: Initializing the clock, booleans, etc.
@@ -35,32 +49,10 @@ class GameController():
         self.isGamePaused = False
         self.mouse = tuple
         self.mouseScaled = tuple
-        self.mousePressed = bool    
-
-        # ASSETS: Initialize the assets
-        self.fontAssets = dict()
-        self.imageAssets = dict()
+        self.mousePressed = bool
 
         # ENTITY: Drawables list. This list will be iterated over and every object with a draw() function will be called here
         self.drawables = list()
-
-        # GAME LOGIC: Blackjack game logic information
-        self.cardFaces = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-        self.cardSuits = ['♠', '♣', '♥', '♦']
-        self.cardWidth = 60
-        self.cardHeight = 100
-
-
-
-
-
-
-    # Call once when the object is created
-    def initialize(self):
-
-        self.fontAssets["cardFont"] =  pygame.font.Font("assets/fonts/dungeon-mode.ttf", 9)
-        self.fontAssets["uiFont"] = pygame.font.Font("assets/fonts/monogram-extended.ttf", 16)
-        self.imageAssets["cardBack"] = pygame.image.load("assets/pixelCardback.png")
 
     # This updates the controls
     def readControls(self):
@@ -70,7 +62,7 @@ class GameController():
 
         # Update the mouse position on the screen (scaled)
         self.mouse = pygame.mouse.get_pos()
-        self.mouseScaled = (self.mouse[0] / self.SCALE, self.mouse[1] / self.SCALE)
+        self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
 
         # Check if left mouse button pressed
         self.mousePressed = pygame.mouse.get_pressed()[0]
@@ -93,16 +85,18 @@ class GameController():
         self.readControls()
 
         # Clear background to color
-        self.surface.fill( self.TABLE_COLOR )
+        self.surface.fill( self.DISPLAY["TABLE_COLOR"] )
 
         # Iterate through the entity list for update functions
+        self.blackjack.update()
+        self.blackjack.draw(self.surface)
 
         # Iterate through the drawables list
         for object in self.drawables:
             object.draw(self.surface)
 
         # Draw the scaled surface to the window
-        self.scaledSurface = pygame.transform.scale(self.surface, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+        self.scaledSurface = pygame.transform.scale(self.surface, (self.DISPLAY["WINDOW_WIDTH"], self.DISPLAY["WINDOW_HEIGHT"]))
         self.window.blit(self.scaledSurface, (0, 0))
 
         # Flip the display to put your work on screen
