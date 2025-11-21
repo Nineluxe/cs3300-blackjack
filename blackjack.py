@@ -361,6 +361,9 @@ while running:
         
         if event.type == pygame.MOUSEBUTTONDOWN:
 
+            if user.score >= 21:
+                game.playerCanHit = False
+                
             # HIT (only allowed if player_can_hit is True)
             if game.playerCanHit and deck.isMouseOver(mouse_scaled):
                 xPos = deck.x
