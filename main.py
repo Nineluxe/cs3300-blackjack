@@ -1,6 +1,6 @@
 
 import pygame
-from scripts import gameController
+from scripts.gameController import GameController
 
 # FILE DESCRIPTION: This is the main entry point of the program. Keep this as sparse as possible by abstracting most
 # components of the game design into separate files and classes.
@@ -8,7 +8,8 @@ from scripts import gameController
 # INITIALIZE: Initialize the game controller and pygame functions
 pygame.init()
 pygame.font.init()
-game = gameController()
+game = GameController()
+game.initialize()
 
 # UPDATE: Called every frame
 while (game.isRunning):
