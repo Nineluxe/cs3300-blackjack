@@ -104,16 +104,27 @@ class BlackjackController:
         return newCard
 
     # Draw it's drawables to the screen
-    def draw(self, surface):
+    def draw(self, surface: pygame.surface.Surface, uiFont: pygame.font.Font):
         
         # Draw the deck
         surface.blit(self.cardBackImage, self.deckPosition)
 
-        
+        # Draw the user score
+        drawYOffset = 16.0
+        drawXOffset = 6.0
+        userScoreText = uiFont.render(f"User Score: {self.userScore}", False, self.display["WHITE_COLOR"])
+        surface.blit(userScoreText, (drawXOffset, self.display["GAME_SIZE"][1] - drawYOffset))
+
+        # Draw the dealer score
+        drawYOffset = 6.0
+        drawXOffset = 6.0
+        dealerScoreText = uiFont.render(f"Dealer Score: {self.dealerScore}", False, self.display["WHITE_COLOR"])
+        surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
+
         # Draw all the drawables (cards)
         for card in self.drawables:
             card.draw()
 
     # Called every frame
-    def update(self):
+    def update(self, controls):
         pass

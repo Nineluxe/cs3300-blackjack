@@ -18,6 +18,12 @@ class GameController():
         "TABLE_COLOR" : (29, 71, 46)
     }
 
+    CONTROLS = {
+        "MOUSE_POSITION" : (0, 0),
+        "MOUSE_SCALED_POSITION" : (0, 0),
+        "MOUSE_PRESSED" : False
+    }
+
     # INIT: Most variables should be defined here, only constants outside
     def __init__(self):
 
@@ -38,18 +44,15 @@ class GameController():
         self.blackjack = BlackjackController(self.DISPLAY, self.imageAssets["cardBack"])
 
         # CONTROLS: Reading controls
-        self.mouse = pygame.mouse.get_pos()
-        self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
-        self.mousePressed = False
+        # self.mouse = pygame.mouse.get_pos()
+        # self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
+        # self.mousePressed = False
 
         # FUNCTIONAL: Initializing the clock, booleans, etc.
         self.clock = pygame.time.Clock()
         self.isDebugging = True
         self.isRunning = True
         self.isGamePaused = False
-        self.mouse = tuple
-        self.mouseScaled = tuple
-        self.mousePressed = bool
 
         # ENTITY: Drawables list. This list will be iterated over and every object with a draw() function will be called here
         self.drawables = list()
@@ -61,11 +64,11 @@ class GameController():
         events = pygame.event.get()
 
         # Update the mouse position on the screen (scaled)
-        self.mouse = pygame.mouse.get_pos()
-        self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
+        self.CONTROLS["MOUSE_POSITION"] = pygame.mouse.get_pos()
+        self.CONTROLS["MOUSE_SCALED_POSITION"] = (self.CONTROLS["MOUSE_POSITION"][0] / self.DISPLAY["SCALE"], self.CONTROLS["MOUSE_POSITION"][1] / self.DISPLAY["SCALE"])
 
         # Check if left mouse button pressed
-        self.mousePressed = pygame.mouse.get_pressed()[0]
+        self.CONTROLS["MOUSE_PRESSED"] = pygame.mouse.get_pressed()[0]
 
         # Process events
         for event in events:
@@ -88,8 +91,8 @@ class GameController():
         self.surface.fill( self.DISPLAY["TABLE_COLOR"] )
 
         # Iterate through the entity list for update functions
-        self.blackjack.update()
-        self.blackjack.draw(self.surface)
+        self.blackjack.update(self.CONTROLS)
+        self.blackjack.draw(self.surface, self.fontAssets["uiFont"])
 
         # Iterate through the drawables list
         for object in self.drawables:

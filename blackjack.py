@@ -191,9 +191,9 @@ class Button(pygame.sprite.Sprite):
 
         #Greys out hit button if player cannot hit
         if self.text == "Hit me!" and game.playerCanHit == False:
-            temp = self.image.copy()
-            temp.fill((50, 50, 50, 120), None, pygame.BLEND_RGBA_MULT)
-            surface.blit(temp, (self.x, self.y))
+            # temp = self.image.copy()
+            # temp.fill((50, 50, 50, 120), None, pygame.BLEND_RGBA_MULT)
+            # surface.blit(temp, (self.x, self.y))
             return
 
         if debugging:
@@ -336,7 +336,7 @@ while running:
         # Debug: Quit game
         #Moved this up here cause otherwise it wouldn't quit when hitting the X
         if event.type == pygame.QUIT:
-            running
+            running = False
             pygame.quit()
             exit()
 
