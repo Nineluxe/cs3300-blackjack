@@ -193,10 +193,10 @@ class BlackjackController:
             # Check controls
             else:
                 if (controls["MOUSE_PRESSED"]):
-                    self.drawCard(self.userHand)
+                    self.eventQueue.append(lambda: self.drawCard(self.userHand))
 
                     if (self.dealerScore <= 16):
-                        self.drawCard(self.dealerHand)
+                        self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
 
         # Update the active cards
         for card in self.drawables:
