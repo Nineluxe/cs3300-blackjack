@@ -86,7 +86,7 @@ class BlackjackController:
         while (cardsDealt < cardAmount):
 
             # Create the card object and send it to the correct players' hand
-            drawnCard = self.getCard(self.deckPosition[0], self.deckPosition[1])
+            drawnCard = self.getCard(self.userHandPosition[0], self.userHandPosition[1])
             self.turns[self.turnIndex].append(drawnCard)
 
             # Increment the cards dealt and the current player
@@ -95,11 +95,13 @@ class BlackjackController:
 
 
     # Draws a card from the deck and returns it
-    def getCard(self, x, y):
+    def getCard(self, desiredX, desiredY):
 
         newCard = self.deck.pop()
-        newCard.x = x
-        newCard.y = y
+        newCard.x = self.deckPosition[0]
+        newCard.y = self.deckPosition[1]
+        newCard.desiredX = desiredX
+        newCard.desiredY = desiredY
 
         return newCard
 
