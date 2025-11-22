@@ -41,15 +41,11 @@ class GameController():
         self.imageAssets["cardBack"] = pygame.image.load("assets/pixelCardback.png").convert_alpha()
 
         # CONTROLLER: Initialize the blackjack game controller
-        self.blackjack = BlackjackController(self.DISPLAY, self.imageAssets["cardBack"])
-
-        # CONTROLS: Reading controls
-        # self.mouse = pygame.mouse.get_pos()
-        # self.mouseScaled = (self.mouse[0] / self.DISPLAY["SCALE"], self.mouse[1] / self.DISPLAY["SCALE"])
-        # self.mousePressed = False
+        self.blackjack = BlackjackController(self.DISPLAY, self.imageAssets, self.fontAssets)
 
         # FUNCTIONAL: Initializing the clock, booleans, etc.
         self.clock = pygame.time.Clock()
+        self.dt = 0.0
         self.isDebugging = True
         self.isRunning = True
         self.isGamePaused = False
@@ -82,7 +78,7 @@ class GameController():
     def run(self):
         
         # Lock the game at 60 FPS
-        self.clock.tick(60)
+        self.dt = self.clock.tick(60) / 1000.0
 
         # Update controls status
         self.readControls()
@@ -91,8 +87,8 @@ class GameController():
         self.surface.fill( self.DISPLAY["TABLE_COLOR"] )
 
         # Iterate through the entity list for update functions
-        self.blackjack.update(self.CONTROLS)
-        self.blackjack.draw(self.surface, self.fontAssets["uiFont"])
+        self.blackjack.update(self.CONTROLS, self.dt)
+        self.blackjack.draw(self.surface)
 
         # Iterate through the drawables list
         for object in self.drawables:

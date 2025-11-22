@@ -5,14 +5,21 @@ from .card import Card
 # This class handles the actual game logic
 class BlackjackController:
 
-    def __init__(self, display, cardBackImage):
+    def __init__(self, display, imageAssets, fontAssets):
 
         # META: Initialize objects
         self.drawables = list()
         self.display = display
+        self.isAnimating = False
+        self.animatingTimer = 0.0
+        self.cardDrawAnimationTime = 0.5
+        self.eventQueue = list()
 
-        # ART: Initialize the card art
-        self.cardBackImage = cardBackImage
+        # ART: Get references to the asset managers
+        self.imageAssets = imageAssets
+        self.fontAssets = fontAssets
+        self.cardBackImage = self.imageAssets["cardBack"]
+        self.cardFont = self.fontAssets["cardFont"]
 
         # GAME LOGIC: Blackjack game logic information
         self.cardFaces = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -40,7 +47,7 @@ class BlackjackController:
         self.deck = list()
         self.deckPosition = ( self.display["GAME_SIZE"][0] - (self.cardWidth + self.cardPositionOffset), self.cardHeight + self.cardPositionOffset )
         self.deckCollisionRect = pygame.Rect(self.deckPosition[0], self.deckPosition[1], self.cardWidth, self.cardHeight)
-        self.resetDeck()
+        self.newRound()
 
     # Creates the deck with normal distribution of playing cards
     def resetDeck(self):
@@ -48,21 +55,36 @@ class BlackjackController:
         # Initialize the deck
         for suit in self.cardSuits:
             for face in self.cardFaces:
-                newCard = Card(0, 0, self.cardWidth, self.cardHeight, self.cardColor, self.cardBorderColor, self.cardBorderWidth, 1.0, face, suit)
+                newCard = Card(0, 0, self.cardWidth, self.cardHeight, self.cardColor, self.cardBorderColor, self.cardBorderWidth, 1, face, suit, self.cardBackImage, self.cardFont)
                 self.deck.append(newCard)
 
         random.shuffle(self.deck)
 
     # Calculates the score values of each player
-    def calculateScore(self):
+    def calculateHandScore(self, playerHand):
+        
+        # Initialize variables
+        totalScore = cardScore = aces = 0
 
         # Calculate the users' score
-        for card in self.userHand:
-            self.userScore += card.getScore()
+        for card in playerHand:
+            cardScore = card.getScore()
+            totalScore += cardScore
 
-        # Calculate the dealers' score
-        for card in self.dealerHand:
-            self.dealerScore += card.getScore()
+            if (cardScore == 11):
+                aces += 1
+
+        # Calculate ace score
+        if aces > 0:
+            while (totalScore > 21):
+                totalScore -= 10 # Reduce the value of an ace to 1 by subtracting 10
+                aces -= 1
+
+        # Set the total score
+        if playerHand == self.userHand:
+            self.userScore = totalScore
+        else:
+            self.dealerScore = totalScore
     
     # Move to the next turn. Technically made such that you can have more users
     def nextTurn(self):
@@ -74,39 +96,63 @@ class BlackjackController:
     # Clear the hands and start a new round
     def newRound(self):
         
+        # Shuffle the deck
+        self.resetDeck()
+        self.drawables.clear()
+
         # Clear both players' hands
         self.userHand.clear()
         self.dealerHand.clear()
         self.userScore = 0
         self.dealerScore = 0
 
-        # Iterate through the players and present cards
-        cardAmount = len(self.turns) * 2 # 2 Cards per player
-        cardsDealt = 0
-        while (cardsDealt < cardAmount):
+        # Create the card object and send it to the correct players' hand
+        self.eventQueue.append(lambda: self.drawCard(self.userHand))
+        self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
+        self.eventQueue.append(lambda: self.drawCard(self.userHand))
+        self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
 
-            # Create the card object and send it to the correct players' hand
-            drawnCard = self.getCard(self.userHandPosition[0], self.userHandPosition[1])
-            self.turns[self.turnIndex].append(drawnCard)
+    # Draws a card from the deck and sends it to the correct players' hand
+    def drawCard(self, player):
+        
+        # Initialize variables
+        self.isAnimating = True
+        self.animatingTimer = self.cardDrawAnimationTime
 
-            # Increment the cards dealt and the current player
-            cardsDealt += 1
-            self.nextTurn()
-
-
-    # Draws a card from the deck and returns it
-    def getCard(self, desiredX, desiredY):
-
+        # Draw the card from the deck
         newCard = self.deck.pop()
         newCard.x = self.deckPosition[0]
         newCard.y = self.deckPosition[1]
-        newCard.desiredX = desiredX
-        newCard.desiredY = desiredY
 
-        return newCard
+        # Add the card to the drawables and to the correct players' hand
+        self.drawables.append(newCard)
+        player.append(newCard)
+
+        # Get the initial position of the players' hand
+        if (player == self.userHand):
+            startingX = self.userHandPosition[0]
+            startingY = self.userHandPosition[1]
+        else:
+            # Else: send the card to the dealer
+            startingX = self.dealerHandPosition[0]
+            startingY = self.dealerHandPosition[1]
+
+        # Update the desired position of the card based on how many cards there are
+        totalCards = len(player)
+        for index, card in enumerate(player):
+
+            cardIndex = index - (totalCards - 1) / 2
+
+            # Update desired positions of cards hand
+            card.desiredX = startingX + (cardIndex * (self.cardWidth + 10))
+            card.desiredY = startingY
+
+        # Update the player's score
+        self.calculateHandScore(player)
+
 
     # Draw it's drawables to the screen
-    def draw(self, surface: pygame.surface.Surface, uiFont: pygame.font.Font):
+    def draw(self, surface):
         
         # Draw the deck
         surface.blit(self.cardBackImage, self.deckPosition)
@@ -114,19 +160,44 @@ class BlackjackController:
         # Draw the user score
         drawYOffset = 16.0
         drawXOffset = 6.0
-        userScoreText = uiFont.render(f"User Score: {self.userScore}", False, self.display["WHITE_COLOR"])
+        userScoreText = self.fontAssets["uiFont"].render(f"User Score: {self.userScore}", False, self.display["WHITE_COLOR"])
         surface.blit(userScoreText, (drawXOffset, self.display["GAME_SIZE"][1] - drawYOffset))
 
         # Draw the dealer score
         drawYOffset = 6.0
         drawXOffset = 6.0
-        dealerScoreText = uiFont.render(f"Dealer Score: {self.dealerScore}", False, self.display["WHITE_COLOR"])
+        dealerScoreText = self.fontAssets["uiFont"].render(f"Dealer Score: {self.dealerScore}", False, self.display["WHITE_COLOR"])
         surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
 
         # Draw all the drawables (cards)
         for card in self.drawables:
-            card.draw()
+            card.draw(surface)
 
     # Called every frame
-    def update(self, controls):
-        pass
+    def update(self, controls, dt):
+        
+        # Work through animations
+        if (self.isAnimating and self.animatingTimer > 0.0):
+            self.animatingTimer -= dt
+        elif (self.animatingTimer <= 0.0):
+            self.isAnimating = False
+
+        # Perform actions if not currently animating
+        if (not self.isAnimating):
+
+            # Iterate through the event queue
+            if ( len(self.eventQueue) > 0 ):
+                event = self.eventQueue.pop(0)
+                event()  # Call draw card
+            
+            # Check controls
+            else:
+                if (controls["MOUSE_PRESSED"]):
+                    self.drawCard(self.userHand)
+
+                    if (self.dealerScore <= 16):
+                        self.drawCard(self.dealerHand)
+
+        # Update the active cards
+        for card in self.drawables:
+            card.update(dt)
