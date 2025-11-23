@@ -75,16 +75,16 @@ class BlackjackController:
                 aces += 1
 
         # Calculate ace score
-        if aces > 0:
-            while (totalScore > 21):
-                totalScore -= 10 # Reduce the value of an ace to 1 by subtracting 10
-                aces -= 1
+        while (aces > 0 and totalScore > 21):
+            totalScore -= 10 # Reduce the value of an ace to 1 by subtracting 10
+            aces -= 1
 
         # Set the total score
         if playerHand == self.userHand:
             self.userScore = totalScore
         else:
             self.dealerScore = totalScore
+
     
     # Move to the next turn. Technically made such that you can have more users
     def nextTurn(self):
