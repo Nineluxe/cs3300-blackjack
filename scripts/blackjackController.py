@@ -1,6 +1,7 @@
 import pygame
 import random
 from .card import Card
+from .button import Button
 
 # This class handles the actual game logic
 class BlackjackController:
@@ -170,8 +171,8 @@ class BlackjackController:
         surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
 
         # Draw all the drawables (cards)
-        for card in self.drawables:
-            card.draw(surface)
+        for drawable in self.drawables:
+            drawable.draw(surface)
 
     # Called every frame
     def update(self, controls, dt):
@@ -192,7 +193,7 @@ class BlackjackController:
             
             # Check controls
             else:
-                if (controls["MOUSE_PRESSED"]):
+                if (controls["MOUSE_PRESSED"]) and (self.deckCollisionRect.collidepoint(controls["MOUSE_SCALED_POSITION"])):
                     self.eventQueue.append(lambda: self.drawCard(self.userHand))
 
                     if (self.dealerScore <= 16):
