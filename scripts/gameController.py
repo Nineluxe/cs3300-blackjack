@@ -1,6 +1,8 @@
 
 import pygame
 from .blackjackController import BlackjackController
+from .button import Button
+from .general import *
 
 # The game controller handles display, blackjack logic, and asset loading
 class GameController():
@@ -25,6 +27,24 @@ class GameController():
         "MOUSE_PRESSED_ONCE" : False
     }
 
+    INSTRUCTIONS = [
+        "Goal: Get as close to 21 as possible without going over. Beat the dealer's hand.",
+        "",
+        "Card Values:",
+        "Number cards = face value",
+        "Face cards (J, Q, K) = 10",
+        "Aces = 1 or 11 (whichever helps you more)",
+        "",
+        "Gameplay:",
+        "You and the dealer each start with 2 cards",
+        "Click the deck to draw another card (hit)",
+        "Keep drawing until you're satisfied with your total, then stand",
+        "If you go over 21, you lose immediately (bust)",
+        "Whoever is closest to 21 without going over wins",
+        "",
+        "That's it! Click the deck to hit, and try to beat the dealer without going over."
+    ]
+
     # INIT: Most variables should be defined here, only constants outside
     def __init__(self):
 
@@ -41,8 +61,27 @@ class GameController():
         self.fontAssets["uiFont"] = pygame.font.Font("assets/fonts/monogram-extended.ttf", 16)
         self.imageAssets["cardBack"] = pygame.image.load("assets/pixelCardback.png").convert_alpha()
 
+        # ENTITY: Drawables list. This list will be iterated over and every object with a draw() function will be called here
+        self.drawables = list()
+
+        # UI: Initialize the main menu buttons
+        self.gameStates = ("MAIN_MENU", "BLACKJACK_GAME", "HOW_TO_PLAY")
+        self.currentGameState = self.gameStates[0]
+        self.startGameButtonPosition = (self.DISPLAY["GAME_SIZE"][0] // 2 - 50, self.DISPLAY["GAME_SIZE"][1] // 2 - 30)
+        self.howToPlayButtonPosition = (self.DISPLAY["GAME_SIZE"][0] // 2 - 50, self.DISPLAY["GAME_SIZE"][1] // 2 + 30)
+        self.doInitializeState = True
+        self.startGameButton = Button( self.startGameButtonPosition[0], self.startGameButtonPosition[1], 100, 40, self.DISPLAY["BLACK_COLOR"], "Start Game", self.fontAssets["uiFont"] )
+        self.howToPlayButton = Button( self.howToPlayButtonPosition[0], self.howToPlayButtonPosition[1], 100, 40, self.DISPLAY["BLACK_COLOR"], "How to Play", self.fontAssets["uiFont"] )
+        self.backButton = Button(self.DISPLAY["GAME_SIZE"][0] // 2 - 50, self.DISPLAY["GAME_SIZE"][1] - 50, 100, 40, self.DISPLAY["BLACK_COLOR"], "Back", self.fontAssets["uiFont"])
+        self.startGameButton.doDraw = False
+        self.startGameButton.disabled = True
+        self.howToPlayButton.doDraw = False
+        self.howToPlayButton.disabled = True
+        self.backButton.doDraw = False
+        self.backButton.disabled = True
+
         # CONTROLLER: Initialize the blackjack game controller
-        self.blackjack = BlackjackController(self.DISPLAY, self.imageAssets, self.fontAssets)
+        self.blackjack = None
 
         # FUNCTIONAL: Initializing the clock, booleans, etc.
         self.clock = pygame.time.Clock()
@@ -51,8 +90,9 @@ class GameController():
         self.isRunning = True
         self.isGamePaused = False
 
-        # ENTITY: Drawables list. This list will be iterated over and every object with a draw() function will be called here
-        self.drawables = list()
+    # Call this when you're ready to start the blackjack game
+    def startBlackjack(self):
+        self.blackjack = BlackjackController(self.DISPLAY, self.CONTROLS, self.imageAssets, self.fontAssets)
 
     # This updates the controls
     def readControls(self):
@@ -100,13 +140,85 @@ class GameController():
         # Clear background to color
         self.surface.fill( self.DISPLAY["TABLE_COLOR"] )
 
-        # Iterate through the entity list for update functions
-        self.blackjack.update(self.CONTROLS, self.dt)
-        self.blackjack.draw(self.surface)
+        match self.currentGameState:
+
+            case "MAIN_MENU":
+
+                # Initialize the main menu if needed
+                if self.doInitializeState:
+                    self.doInitializeState = False
+
+                    self.blackjack = None
+                    self.startGameButton.doDraw = True
+                    self.howToPlayButton.doDraw = True
+                    self.startGameButton.disabled = False
+                    self.howToPlayButton.disabled = False
+                    self.drawables.append(self.startGameButton)
+                    self.drawables.append(self.howToPlayButton)
+
+                # Update buttons
+                if self.startGameButton.isMouseOver(self.CONTROLS["MOUSE_SCALED_POSITION"]) and self.CONTROLS["MOUSE_PRESSED_ONCE"]:
+                    self.doInitializeState = True
+
+                    self.currentGameState = "BLACKJACK_GAME"
+                    self.drawables.clear()
+                    self.startGameButton.doDraw = False
+                    self.howToPlayButton.doDraw = False
+                    self.startGameButton.disabled = True
+                    self.howToPlayButton.doDraw = True
+
+                if self.howToPlayButton.isMouseOver(self.CONTROLS["MOUSE_SCALED_POSITION"]) and self.CONTROLS["MOUSE_PRESSED_ONCE"]:
+                    self.doInitializeState = True
+                    self.drawables.clear()
+                    self.currentGameState = "HOW_TO_PLAY"
+
+            case "BLACKJACK_GAME":
+
+                # Initialize the blackjack game if needed
+                if self.doInitializeState:
+                    self.startBlackjack()
+                    self.doInitializeState = False
+                
+                # Update the blackjack game object
+                if self.blackjack is not None:
+                    self.blackjack.update(self.CONTROLS, self.dt)
+                    self.blackjack.draw(self.surface)
+
+                    if self.blackjack.isQuitting:
+                        self.doInitializeState = True
+                        self.blackjack = None
+                        self.currentGameState = "MAIN_MENU"
+                        self.drawables.clear()
+
+            case "HOW_TO_PLAY":
+                
+                # Enable the back button
+                if self.doInitializeState:
+                    self.doInitializeState = False
+                    self.backButton.disabled = False
+                    self.backButton.doDraw = True
+                    self.drawables.append(self.backButton)
+
+                # Back button functionality
+                if self.backButton.isMouseOver(self.CONTROLS["MOUSE_SCALED_POSITION"]) and self.CONTROLS["MOUSE_PRESSED_ONCE"]:
+                    self.doInitializeState = True
+                    self.backButton.disabled = True
+                    self.backButton.doDraw = False
+                    self.drawables.clear()
+                    self.currentGameState = "MAIN_MENU"
+
+                # Draw the HOW TO PLAY text
+                textCoordinateStart = (self.DISPLAY["GAME_SIZE"][0] // 2, 10)
+                textYSeparation = 10
+                drawText(textCoordinateStart , "HOW TO PLAY", self.fontAssets["uiFont"], self.DISPLAY["WHITE_COLOR"], self.surface, "center")
+
+                for index, value in enumerate(self.INSTRUCTIONS):
+                    textCoordinates = (textCoordinateStart[0], textCoordinateStart[1] + (index + 2) * textYSeparation)
+                    drawText(textCoordinates, self.INSTRUCTIONS[index], self.fontAssets["uiFont"], self.DISPLAY["WHITE_COLOR"], self.surface, "center")
 
         # Iterate through the drawables list
         for object in self.drawables:
-            object.draw(self.surface)
+            object.draw(self.surface, self.CONTROLS["MOUSE_SCALED_POSITION"])
 
         # Draw the scaled surface to the window
         self.scaledSurface = pygame.transform.scale(self.surface, (self.DISPLAY["WINDOW_WIDTH"], self.DISPLAY["WINDOW_HEIGHT"]))

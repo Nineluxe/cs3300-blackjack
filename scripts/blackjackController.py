@@ -1,27 +1,36 @@
 import pygame
 import random
+from .general import *
 from .card import Card
 from .button import Button
 
 # This class handles the actual game logic
 class BlackjackController:
 
-    def __init__(self, display, imageAssets, fontAssets):
+    def __init__(self, display, controls, imageAssets, fontAssets):
 
         # META: Initialize objects
         self.cardDrawables = list()
         self.uiDrawables = list()
         self.display = display
+        self.controls = controls
         self.isAnimating = False
         self.animatingTimer = 0.0
         self.cardDrawAnimationTime = 0.5
         self.eventQueue = list()
+        self.doDrawDealerScore = False
+        self.doDrawDeckText = False
+        self.isQuitting = False
 
         # ART: Get references to the asset managers
         self.imageAssets = imageAssets
         self.fontAssets = fontAssets
         self.cardBackImage = self.imageAssets["cardBack"]
         self.cardFont = self.fontAssets["cardFont"]
+        self.whiteColor = self.display["WHITE_COLOR"]
+        self.blackColor = self.display["BLACK_COLOR"]
+        self.redColor = self.display["RED_COLOR"]
+        self.uiFont = self.fontAssets["uiFont"]
 
         # GAME LOGIC: Blackjack game logic information
         self.cardFaces = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -29,14 +38,14 @@ class BlackjackController:
         self.cardWidth = 60
         self.cardHeight = 100
         self.cardBorderWidth = 2
-        self.cardColor = display["WHITE_COLOR"]
-        self.cardBorderColor = display["BLACK_COLOR"]
+        self.cardColor = self.whiteColor
+        self.cardBorderColor = self.blackColor
 
         # GAME LOGIC: Initialize the two players
         self.gameSize = self.display["GAME_SIZE"]
         self.cardPositionOffset = 10
-        self.userHandPosition = ( (self.display["GAME_SIZE"][0] // 2) - (self.cardWidth // 2), self.display["GAME_SIZE"][1] - (self.cardHeight + self.cardPositionOffset) )
-        self.dealerHandPosition = ( (self.display["GAME_SIZE"][0] // 2) - (self.cardWidth // 2), self.cardPositionOffset )
+        self.userHandPosition = ( (self.gameSize[0] // 2) - (self.cardWidth // 2), self.gameSize[1] - (self.cardHeight + self.cardPositionOffset) )
+        self.dealerHandPosition = ( (self.gameSize[0] // 2) - (self.cardWidth // 2), self.cardPositionOffset )
         self.userHand = list()
         self.dealerHand = list()
         self.userScore = self.dealerScore = 0
@@ -44,22 +53,21 @@ class BlackjackController:
         # GAME LOGIC: Initialize turns
         self.turns = (self.userHand, self.dealerHand)
         self.turnIndex = 0 # This is the index of the self.turns tuple
-        self.gamePhases = ("INITIAL_DRAW", "USER_TURN", "DEALER_TURN", "ROUND_END")
-        self.currentPhase = self.gamePhases[3]
+        self.gamePhases = ("START", "INITIAL_DRAW", "USER_TURN", "DEALER_TURN", "ROUND_END")
+        self.currentPhase = self.gamePhases[0]
 
         # GAME LOGIC: Deck initialization
         self.deck = list()
-        self.deckPosition = ( self.display["GAME_SIZE"][0] - (self.cardWidth + self.cardPositionOffset), self.cardHeight + self.cardPositionOffset )
+        self.deckPosition = ( self.gameSize[0] - (self.cardWidth + self.cardPositionOffset), self.cardHeight + self.cardPositionOffset )
         self.deckCollisionRect = pygame.Rect(self.deckPosition[0], self.deckPosition[1], self.cardWidth, self.cardHeight)
 
         # UI: Create buttons
-        self.newRoundButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 - 30)
-        self.stayButtonPosition = (self.display["GAME_SIZE"][0] - 110, self.display["GAME_SIZE"][1] - 50)
-        self.quitButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 + 30)
+        self.stayButtonPosition = (self.gameSize[0] - 110, self.gameSize[1] - 50)
+        self.quitButtonPosition = (10, self.gameSize[1] // 2 + 30)
 
-        self.newRoundButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "New Round", self.fontAssets["uiFont"] )
-        self.quitButton = Button( self.quitButtonPosition[0], self.quitButtonPosition[1], 100, 40, self.display["RED_COLOR"], "Quit", self.fontAssets["uiFont"] )
-        self.stayButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "Stay", self.fontAssets["uiFont"] )
+        self.newRoundButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.blackColor, "New Round", self.uiFont )
+        self.quitButton = Button( self.quitButtonPosition[0], self.quitButtonPosition[1], 100, 40, self.redColor, "Quit", self.uiFont )
+        self.stayButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.blackColor, "Stay", self.uiFont )
 
         self.uiDrawables.append(self.newRoundButton)
         self.uiDrawables.append(self.quitButton)
@@ -125,12 +133,12 @@ class BlackjackController:
 
         # Create the card object and send it to the correct players' hand
         self.eventQueue.append(lambda: self.drawCard(self.userHand))
-        self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
+        self.eventQueue.append(lambda: self.drawCard(self.dealerHand, False))
         self.eventQueue.append(lambda: self.drawCard(self.userHand))
         self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
 
     # Draws a card from the deck and sends it to the correct players' hand
-    def drawCard(self, player):
+    def drawCard(self, player, isFaceUp=True):
         
         # Initialize variables
         self.isAnimating = True
@@ -138,6 +146,7 @@ class BlackjackController:
 
         # Draw the card from the deck
         newCard = self.deck.pop()
+        newCard.isFaceUp = isFaceUp
         newCard.x = self.deckPosition[0]
         newCard.y = self.deckPosition[1]
 
@@ -189,14 +198,20 @@ class BlackjackController:
         # Draw the user score
         drawYOffset = 16.0
         drawXOffset = 6.0
-        userScoreText = self.fontAssets["uiFont"].render(f"User Score: {self.userScore}", False, self.display["WHITE_COLOR"])
-        surface.blit(userScoreText, (drawXOffset, self.display["GAME_SIZE"][1] - drawYOffset))
+        userScoreText = self.uiFont.render(f"User Score: {self.userScore}", False, self.whiteColor)
+        surface.blit(userScoreText, (drawXOffset, self.gameSize[1] - drawYOffset))
 
         # Draw the dealer score
-        drawYOffset = 6.0
-        drawXOffset = 6.0
-        dealerScoreText = self.fontAssets["uiFont"].render(f"Dealer Score: {self.dealerScore}", False, self.display["WHITE_COLOR"])
-        surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
+        if self.doDrawDealerScore:
+            drawYOffset = 6.0
+            drawXOffset = 6.0
+            dealerScoreText = self.uiFont.render(f"Dealer Score: {self.dealerScore}", False, self.whiteColor)
+            surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
+
+        # Draw where to draw cards from
+        if self.doDrawDeckText:
+            deckTextPosition = (self.deckPosition[0] + 3, self.deckPosition[1] + self.cardHeight + 4)
+            drawText(deckTextPosition, "Draw Card", self.uiFont, self.whiteColor, surface)
 
         # Draw all the cards
         for drawable in self.cardDrawables:
@@ -204,9 +219,14 @@ class BlackjackController:
 
         # Draw all the UI
         for drawable in self.uiDrawables:
-            drawable.draw(surface)
+            drawable.draw(surface, self.controls["MOUSE_SCALED_POSITION"])
 
-        # Draw GAME OVER!
+        # Draw the initial text
+        if self.currentPhase == "START":
+            resultText = "Push new round."
+            drawText((self.gameSize[0] // 2, self.gameSize[1] // 2), resultText, self.uiFont, self.whiteColor, surface, "center")
+
+        # Draw game over screen
         if self.currentPhase == "ROUND_END":
             resultText = ""
             if self.userScore > 21:
@@ -217,12 +237,12 @@ class BlackjackController:
                 resultText = "You Win!"
             elif self.userScore < self.dealerScore:
                 resultText = "Dealer Wins!"
+            elif self.userScore == self.dealerScore:
+                resultText = "TIE!"
             else:
                 resultText = "Push new round."
 
-            gameOverText = self.fontAssets["uiFont"].render(resultText, False, self.display["WHITE_COLOR"])
-            textRect = gameOverText.get_rect(center=(self.display["GAME_SIZE"][0] // 2, self.display["GAME_SIZE"][1] // 2))
-            surface.blit(gameOverText, textRect)
+            drawText((self.gameSize[0] // 2, self.gameSize[1] // 2), resultText, self.uiFont, self.whiteColor, surface, "center")
 
     # Called every frame
     def update(self, controls, dt):
@@ -243,8 +263,7 @@ class BlackjackController:
 
         # Quit button
         if self.quitButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
-            pygame.quit()
-            exit()
+            self.isQuitting = True
 
         # Perform actions if not currently animating
         if (self.isAnimating):
@@ -258,7 +277,25 @@ class BlackjackController:
 
         # Game logic
         match self.currentPhase:
+
+            case "START":
+                # Set the stay button to invisible
+                self.stayButton.doDraw = False
+                self.stayButton.disabled = True
+
+                self.newRoundButton.doDraw = True
+                self.newRoundButton.disabled = False
+
+                if self.newRoundButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+                    self.currentPhase = "INITIAL_DRAW"
+
             case "INITIAL_DRAW":
+                
+                # Draw the "draw card" text under the deck
+                self.doDrawDeckText = True
+
+                # Set dealers score invisible
+                self.doDrawDealerScore = False
 
                 # Set the stay button to invisible
                 self.stayButton.doDraw = True
@@ -284,16 +321,22 @@ class BlackjackController:
                         self.currentPhase = "DEALER_TURN"
 
             case "DEALER_TURN":
-                
                 if self.dealerScore > 21:
                     self.currentPhase = "ROUND_END"
-                elif self.dealerScore >= 17 and self.dealerScore >= self.userScore:
+                elif self.dealerScore >= 17:
                     self.currentPhase = "ROUND_END"
                 else:
                     self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
 
             case "ROUND_END":
                 
+                # Set the dealers cards as visible
+                for card in self.dealerHand:
+                    card.isFaceUp = True
+
+                # Set the dealers score to be visible
+                self.doDrawDealerScore = True
+
                 # Set the stay button to invisible
                 self.stayButton.doDraw = False
                 self.stayButton.disabled = True
