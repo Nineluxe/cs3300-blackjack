@@ -13,11 +13,21 @@ class Button:
         self.borderColor = pygame.color.Color(0, 0, 0, 255)
         self.textColor = pygame.color.Color(255, 255, 255, 255)
         self.outlineWidth = 2
+        self.disabled = False
+        self.doDraw = True
 
     def isMouseOver(self, mousePos):
+        
+        if self.disabled:
+            return False
+        
         return self.rect.collidepoint(mousePos)
     
     def draw(self, surface):
+
+        if not self.doDraw:
+            return
+        
         # Draw filled rectangle
         pygame.draw.rect(surface, self.fillColor, self.rect, border_radius=self.cornerRadius)
         

@@ -44,19 +44,20 @@ class BlackjackController:
         # GAME LOGIC: Initialize turns
         self.turns = (self.userHand, self.dealerHand)
         self.turnIndex = 0 # This is the index of the self.turns tuple
+        self.gamePhases = ("INITIAL_DRAW", "USER_TURN", "DEALER_TURN", "ROUND_END")
+        self.currentPhase = self.gamePhases[3]
 
         # GAME LOGIC: Deck initialization
         self.deck = list()
         self.deckPosition = ( self.display["GAME_SIZE"][0] - (self.cardWidth + self.cardPositionOffset), self.cardHeight + self.cardPositionOffset )
         self.deckCollisionRect = pygame.Rect(self.deckPosition[0], self.deckPosition[1], self.cardWidth, self.cardHeight)
-        self.newRound()
 
         # UI: Create buttons
         self.newRoundButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 - 30)
         self.stayButtonPosition = (self.display["GAME_SIZE"][0] - 110, self.display["GAME_SIZE"][1] - 50)
         self.quitButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 + 30)
 
-        self.newRoundButton = Button( self.newRoundButtonPosition[0], self.newRoundButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "New Round", self.fontAssets["uiFont"] )
+        self.newRoundButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "New Round", self.fontAssets["uiFont"] )
         self.quitButton = Button( self.quitButtonPosition[0], self.quitButtonPosition[1], 100, 40, self.display["RED_COLOR"], "Quit", self.fontAssets["uiFont"] )
         self.stayButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "Stay", self.fontAssets["uiFont"] )
 
@@ -170,12 +171,14 @@ class BlackjackController:
     def checkUIButtons(self, controls):
         
         if self.newRoundButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
-            print("New round pressed!")
             self.newRound()
 
-        if self.quitButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
-            pygame.quit()
-            exit()
+        if self.stayButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+            
+            # Dealer draws cards until score is at least 17
+            while (self.dealerScore < 17):
+                self.drawCard(self.dealerHand)
+
 
     # Draw it's drawables to the screen
     def draw(self, surface):
@@ -203,6 +206,24 @@ class BlackjackController:
         for drawable in self.uiDrawables:
             drawable.draw(surface)
 
+        # Draw GAME OVER!
+        if self.currentPhase == "ROUND_END":
+            resultText = ""
+            if self.userScore > 21:
+                resultText = "BUST! Dealer Wins!"
+            elif self.dealerScore > 21:
+                resultText = "Dealer BUSTS! You Win!"
+            elif self.userScore > self.dealerScore:
+                resultText = "You Win!"
+            elif self.userScore < self.dealerScore:
+                resultText = "Dealer Wins!"
+            else:
+                resultText = "Push new round."
+
+            gameOverText = self.fontAssets["uiFont"].render(resultText, False, self.display["WHITE_COLOR"])
+            textRect = gameOverText.get_rect(center=(self.display["GAME_SIZE"][0] // 2, self.display["GAME_SIZE"][1] // 2))
+            surface.blit(gameOverText, textRect)
+
     # Called every frame
     def update(self, controls, dt):
         
@@ -212,25 +233,6 @@ class BlackjackController:
         elif (self.animatingTimer <= 0.0):
             self.isAnimating = False
 
-        # Perform actions if not currently animating
-        if (not self.isAnimating):
-
-            # Check buttons for use
-            self.checkUIButtons(controls)
-
-            # Iterate through the event queue
-            if ( len(self.eventQueue) > 0 ):
-                event = self.eventQueue.pop(0)
-                event()  # Call draw card
-            
-            # Check controls
-            else:
-                if (controls["MOUSE_PRESSED"]) and (self.deckCollisionRect.collidepoint(controls["MOUSE_SCALED_POSITION"])):
-                    self.eventQueue.append(lambda: self.drawCard(self.userHand))
-
-                    if (self.dealerScore <= 16):
-                        self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
-
         # Update the active cards
         for card in self.cardDrawables:
             card.update(dt)
@@ -238,3 +240,67 @@ class BlackjackController:
         # Update the active cards
         for ui in self.uiDrawables:
             ui.update(dt)
+
+        # Quit button
+        if self.quitButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+            pygame.quit()
+            exit()
+
+        # Perform actions if not currently animating
+        if (self.isAnimating):
+            return
+
+        # Check if the event queue has events
+        if ( len(self.eventQueue) > 0 ):
+            event = self.eventQueue.pop(0)
+            event()  # Call whatever function is next in the queue
+            return
+
+        # Game logic
+        match self.currentPhase:
+            case "INITIAL_DRAW":
+
+                # Set the stay button to invisible
+                self.stayButton.doDraw = True
+                self.stayButton.disabled = False
+
+                self.newRoundButton.doDraw = False
+                self.newRoundButton.disabled = True
+
+                self.newRound()
+                self.currentPhase = "USER_TURN"
+
+            case "USER_TURN":
+
+                if self.userScore > 21:
+                    self.currentPhase = "ROUND_END"
+                else:               
+                    # Check if deck is pressed
+                    if (controls["MOUSE_PRESSED"]) and (self.deckCollisionRect.collidepoint(controls["MOUSE_SCALED_POSITION"])):
+                        self.eventQueue.append(lambda: self.drawCard(self.userHand))
+
+                    # Check for stay button press
+                    if (controls["MOUSE_PRESSED"]) and (self.stayButton.isMouseOver(controls["MOUSE_SCALED_POSITION"])):
+                        self.currentPhase = "DEALER_TURN"
+
+            case "DEALER_TURN":
+                
+                if self.dealerScore > 21:
+                    self.currentPhase = "ROUND_END"
+                elif self.dealerScore >= 17 and self.dealerScore >= self.userScore:
+                    self.currentPhase = "ROUND_END"
+                else:
+                    self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
+
+            case "ROUND_END":
+                
+                # Set the stay button to invisible
+                self.stayButton.doDraw = False
+                self.stayButton.disabled = True
+
+                self.newRoundButton.doDraw = True
+                self.newRoundButton.disabled = False
+
+                if self.newRoundButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+                    self.currentPhase = "INITIAL_DRAW"
+
