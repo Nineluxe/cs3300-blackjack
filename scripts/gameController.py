@@ -66,18 +66,20 @@ class GameController():
         # Update MOUSE_PRESSED (continuous held state)
         self.CONTROLS["MOUSE_PRESSED"] = currentMousePressed
 
-        # Update MOUSE_PRESSED_ONCE (single frame activation)
         # Only True if currently pressed AND was not pressed last frame
         if currentMousePressed and not self.CONTROLS.get("MOUSE_WAS_PRESSED", False):
             self.CONTROLS["MOUSE_PRESSED_ONCE"] = True
-            print("Mouse Pressed")
         else:
             self.CONTROLS["MOUSE_PRESSED_ONCE"] = False
 
         # Store current state for next frame
         self.CONTROLS["MOUSE_WAS_PRESSED"] = currentMousePressed
 
-        
+        # Update mouse position
+        mouseX, mouseY = pygame.mouse.get_pos()
+        self.CONTROLS["MOUSE_POSITION"] = (mouseX, mouseY)
+        self.CONTROLS["MOUSE_SCALED_POSITION"] = (mouseX // self.DISPLAY["SCALE"], mouseY // self.DISPLAY["SCALE"])
+
         # Process events
         for event in events:
             

@@ -112,6 +112,7 @@ class BlackjackController:
     def newRound(self):
         
         # Shuffle the deck
+        self.eventQueue.clear()
         self.resetDeck()
         self.cardDrawables.clear()
 
@@ -165,9 +166,11 @@ class BlackjackController:
         # Update the player's score
         self.calculateHandScore(player)
 
+    # Check the hover status of the UI buttons
     def checkUIButtons(self, controls):
         
         if self.newRoundButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+            print("New round pressed!")
             self.newRound()
 
         if self.quitButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
@@ -209,11 +212,11 @@ class BlackjackController:
         elif (self.animatingTimer <= 0.0):
             self.isAnimating = False
 
-        # Check buttons for use
-        self.checkUIButtons(controls)
-
         # Perform actions if not currently animating
         if (not self.isAnimating):
+
+            # Check buttons for use
+            self.checkUIButtons(controls)
 
             # Iterate through the event queue
             if ( len(self.eventQueue) > 0 ):
@@ -231,3 +234,7 @@ class BlackjackController:
         # Update the active cards
         for card in self.cardDrawables:
             card.update(dt)
+
+        # Update the active cards
+        for ui in self.uiDrawables:
+            ui.update(dt)

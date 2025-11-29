@@ -13,7 +13,7 @@ class Button:
         self.borderColor = pygame.color.Color(0, 0, 0, 255)
         self.textColor = pygame.color.Color(255, 255, 255, 255)
         self.outlineWidth = 2
-        
+
     def isMouseOver(self, mousePos):
         return self.rect.collidepoint(mousePos)
     
@@ -23,7 +23,7 @@ class Button:
         
         # Draw outline
         pygame.draw.rect(surface, self.borderColor, self.rect, width=self.outlineWidth, border_radius=self.cornerRadius)
-        
+
         # Render text and center it
         text_surface = self.font.render(self.text, True, self.textColor)
         text_rect = text_surface.get_rect(center=self.rect.center)
