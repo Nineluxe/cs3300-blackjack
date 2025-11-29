@@ -70,12 +70,14 @@ class GameController():
         # Only True if currently pressed AND was not pressed last frame
         if currentMousePressed and not self.CONTROLS.get("MOUSE_WAS_PRESSED", False):
             self.CONTROLS["MOUSE_PRESSED_ONCE"] = True
+            print("Mouse Pressed")
         else:
             self.CONTROLS["MOUSE_PRESSED_ONCE"] = False
 
         # Store current state for next frame
         self.CONTROLS["MOUSE_WAS_PRESSED"] = currentMousePressed
 
+        
         # Process events
         for event in events:
             

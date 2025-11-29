@@ -9,7 +9,8 @@ class BlackjackController:
     def __init__(self, display, imageAssets, fontAssets):
 
         # META: Initialize objects
-        self.drawables = list()
+        self.cardDrawables = list()
+        self.uiDrawables = list()
         self.display = display
         self.isAnimating = False
         self.animatingTimer = 0.0
@@ -59,9 +60,9 @@ class BlackjackController:
         self.quitButton = Button( self.quitButtonPosition[0], self.quitButtonPosition[1], 100, 40, self.display["RED_COLOR"], "Quit", self.fontAssets["uiFont"] )
         self.stayButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "Stay", self.fontAssets["uiFont"] )
 
-        self.drawables.append(self.newRoundButton)
-        self.drawables.append(self.quitButton)
-        self.drawables.append(self.stayButton)
+        self.uiDrawables.append(self.newRoundButton)
+        self.uiDrawables.append(self.quitButton)
+        self.uiDrawables.append(self.stayButton)
 
     # Creates the deck with normal distribution of playing cards
     def resetDeck(self):
@@ -112,7 +113,7 @@ class BlackjackController:
         
         # Shuffle the deck
         self.resetDeck()
-        self.drawables.clear()
+        self.cardDrawables.clear()
 
         # Clear both players' hands
         self.userHand.clear()
@@ -139,7 +140,7 @@ class BlackjackController:
         newCard.y = self.deckPosition[1]
 
         # Add the card to the drawables and to the correct players' hand
-        self.drawables.append(newCard)
+        self.cardDrawables.append(newCard)
         player.append(newCard)
 
         # Get the initial position of the players' hand
@@ -191,8 +192,12 @@ class BlackjackController:
         dealerScoreText = self.fontAssets["uiFont"].render(f"Dealer Score: {self.dealerScore}", False, self.display["WHITE_COLOR"])
         surface.blit(dealerScoreText, (drawXOffset, drawYOffset))
 
-        # Draw all the drawables (cards)
-        for drawable in self.drawables:
+        # Draw all the cards
+        for drawable in self.cardDrawables:
+            drawable.draw(surface)
+
+        # Draw all the UI
+        for drawable in self.uiDrawables:
             drawable.draw(surface)
 
     # Called every frame
@@ -224,5 +229,5 @@ class BlackjackController:
                         self.eventQueue.append(lambda: self.drawCard(self.dealerHand))
 
         # Update the active cards
-        for card in self.drawables:
+        for card in self.cardDrawables:
             card.update(dt)
