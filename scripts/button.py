@@ -1,4 +1,3 @@
-
 import pygame
 
 class Button:
@@ -12,14 +11,24 @@ class Button:
         self.fillColor = color
         self.cornerRadius = 2
         self.borderColor = pygame.color.Color(0, 0, 0, 255)
-
+        self.textColor = pygame.color.Color(255, 255, 255, 255)
+        self.outlineWidth = 2
+        
     def isMouseOver(self, mousePos):
         return self.rect.collidepoint(mousePos)
-
+    
     def draw(self, surface):
-        pygame.draw.rect(surface, self.fillColor, self.rect, border_radius=1)
-
-        self.font.render("Testing", False, pygame.color.Color(255, 255, 255, 255))
-
+        # Draw filled rectangle
+        pygame.draw.rect(surface, self.fillColor, self.rect, border_radius=self.cornerRadius)
+        
+        # Draw outline
+        pygame.draw.rect(surface, self.borderColor, self.rect, width=self.outlineWidth, border_radius=self.cornerRadius)
+        
+        # Render text and center it
+        text_surface = self.font.render(self.text, True, self.textColor)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+    
+    # Unused 
     def update(self, dt):
         pass

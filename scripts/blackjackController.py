@@ -50,6 +50,19 @@ class BlackjackController:
         self.deckCollisionRect = pygame.Rect(self.deckPosition[0], self.deckPosition[1], self.cardWidth, self.cardHeight)
         self.newRound()
 
+        # UI: Create buttons
+        self.newRoundButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 - 30)
+        self.stayButtonPosition = (self.display["GAME_SIZE"][0] - 110, self.display["GAME_SIZE"][1] - 50)
+        self.quitButtonPosition = (10, self.display["GAME_SIZE"][1] // 2 + 30)
+
+        self.newRoundButton = Button( self.newRoundButtonPosition[0], self.newRoundButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "New Round", self.fontAssets["uiFont"] )
+        self.quitButton = Button( self.quitButtonPosition[0], self.quitButtonPosition[1], 100, 40, self.display["RED_COLOR"], "Quit", self.fontAssets["uiFont"] )
+        self.stayButton = Button( self.stayButtonPosition[0], self.stayButtonPosition[1], 100, 40, self.display["BLACK_COLOR"], "Stay", self.fontAssets["uiFont"] )
+
+        self.drawables.append(self.newRoundButton)
+        self.drawables.append(self.quitButton)
+        self.drawables.append(self.stayButton)
+
     # Creates the deck with normal distribution of playing cards
     def resetDeck(self):
         
@@ -151,6 +164,14 @@ class BlackjackController:
         # Update the player's score
         self.calculateHandScore(player)
 
+    def checkUIButtons(self, controls):
+        
+        if self.newRoundButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+            self.newRound()
+
+        if self.quitButton.isMouseOver(controls["MOUSE_SCALED_POSITION"]) and controls["MOUSE_PRESSED_ONCE"]:
+            pygame.quit()
+            exit()
 
     # Draw it's drawables to the screen
     def draw(self, surface):
@@ -182,6 +203,9 @@ class BlackjackController:
             self.animatingTimer -= dt
         elif (self.animatingTimer <= 0.0):
             self.isAnimating = False
+
+        # Check buttons for use
+        self.checkUIButtons(controls)
 
         # Perform actions if not currently animating
         if (not self.isAnimating):

@@ -21,7 +21,8 @@ class GameController():
     CONTROLS = {
         "MOUSE_POSITION" : (0, 0),
         "MOUSE_SCALED_POSITION" : (0, 0),
-        "MOUSE_PRESSED" : False
+        "MOUSE_PRESSED" : False,
+        "MOUSE_PRESSED_ONCE" : False
     }
 
     # INIT: Most variables should be defined here, only constants outside
@@ -59,12 +60,21 @@ class GameController():
         # Updates game events. Best practice to call it before getting information about controls.
         events = pygame.event.get()
 
-        # Update the mouse position on the screen (scaled)
-        self.CONTROLS["MOUSE_POSITION"] = pygame.mouse.get_pos()
-        self.CONTROLS["MOUSE_SCALED_POSITION"] = (self.CONTROLS["MOUSE_POSITION"][0] / self.DISPLAY["SCALE"], self.CONTROLS["MOUSE_POSITION"][1] / self.DISPLAY["SCALE"])
+        # Get current mouse button state
+        currentMousePressed = pygame.mouse.get_pressed()[0]
 
-        # Check if left mouse button pressed
-        self.CONTROLS["MOUSE_PRESSED"] = pygame.mouse.get_pressed()[0]
+        # Update MOUSE_PRESSED (continuous held state)
+        self.CONTROLS["MOUSE_PRESSED"] = currentMousePressed
+
+        # Update MOUSE_PRESSED_ONCE (single frame activation)
+        # Only True if currently pressed AND was not pressed last frame
+        if currentMousePressed and not self.CONTROLS.get("MOUSE_WAS_PRESSED", False):
+            self.CONTROLS["MOUSE_PRESSED_ONCE"] = True
+        else:
+            self.CONTROLS["MOUSE_PRESSED_ONCE"] = False
+
+        # Store current state for next frame
+        self.CONTROLS["MOUSE_WAS_PRESSED"] = currentMousePressed
 
         # Process events
         for event in events:
