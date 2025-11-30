@@ -7,6 +7,7 @@ Last-Modified: Wed, 30 Jul 2025 00:35:46 GMT
 Access-Control-Allow-Origin: *
 Strict-Transport-Security: max-age=31556952
 ETag: "688968e2-4b8d8a"
+<<<<<<< Updated upstream
 expires: Sat, 29 Nov 2025 20:58:58 GMT
 Cache-Control: max-age=600
 x-proxy-cache: MISS
@@ -21,4 +22,20 @@ X-Cache-Hits: 0
 X-Timer: S1764449339.872172,VS0,VE458
 Vary: Accept-Encoding
 X-Fastly-Request-ID: 2942e8463cc07d4d45bc41c2673a1d120c4c3f75
+=======
+expires: Sun, 30 Nov 2025 00:15:18 GMT
+Cache-Control: max-age=600
+x-proxy-cache: MISS
+X-GitHub-Request-Id: 1B4D:1D2F6B:2400D44:29C0636:692B8A3C
+Accept-Ranges: bytes
+Age: 0
+Date: Sun, 30 Nov 2025 00:05:19 GMT
+Via: 1.1 varnish
+X-Served-By: cache-den-kden1300053-DEN
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1764461119.880889,VS0,VE394
+Vary: Accept-Encoding
+X-Fastly-Request-ID: cbad2400596cc4c2e42d4f6d448a29b4e090e378
+>>>>>>> Stashed changes
 

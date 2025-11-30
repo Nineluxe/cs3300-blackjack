@@ -13,6 +13,7 @@ x-proxy-cache: MISS
 X-GitHub-Request-Id: DBFD:3FDFF8:1FC396B:22FE01D:692B3BFC
 Accept-Ranges: bytes
 Age: 0
+<<<<<<< Updated upstream
 Date: Sat, 29 Nov 2025 20:48:58 GMT
 Via: 1.1 varnish
 X-Served-By: cache-den-kden1300078-DEN
@@ -21,4 +22,14 @@ X-Cache-Hits: 0
 X-Timer: S1764449338.042022,VS0,VE226
 Vary: Accept-Encoding
 X-Fastly-Request-ID: c4cdf839fa70235ac969b34c8c2c19495dc812f6
+=======
+Date: Sun, 30 Nov 2025 00:05:18 GMT
+Via: 1.1 varnish
+X-Served-By: cache-den-kden1300032-DEN
+X-Cache: HIT
+X-Cache-Hits: 0
+X-Timer: S1764461118.040125,VS0,VE54
+Vary: Accept-Encoding
+X-Fastly-Request-ID: 3bc909ba67d5c10fcda9a58d577d001086266f1a
+>>>>>>> Stashed changes
 
