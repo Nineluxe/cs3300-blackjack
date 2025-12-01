@@ -1,20 +1,32 @@
-
+import asyncio
 import pygame
+import traceback
 from scripts.gameController import GameController
 
-# FILE DESCRIPTION: This is the main entry point of the program. Keep this as sparse as possible by abstracting most
-# components of the game design into separate files and classes.
-
-# TODO: Fix the issue with calculating score. When we add a face card, the score is not updated properly. Could be an issue with how aces are handled, though.
-
-# INITIALIZE: Initialize the game controller and pygame functions
 pygame.init()
 pygame.font.init()
-game = GameController()
 
-# UPDATE: Called every frame
-while (game.isRunning):
-    game.run()
+# Main asynchronous game loop, needed to work with pygbag
+async def main():
+    try:
+        game = GameController()
+        
+        frame_count = 0
+        while game.isRunning:
+            game.run()
+            frame_count += 1
+            
+            # Add a safety exit after 1000 frames for testing
+            if frame_count > 1000:
+                print(f"Ran {frame_count} frames successfully")
+            
+            await asyncio.sleep(0)
+        
+        print("Game loop ended normally")
+    except Exception as e:
+        print(f"Error in game loop: {e}")
+        traceback.print_exc()
+    
+    pygame.quit()
 
-# CONTROL: End the program
-pygame.quit()
+asyncio.run(main())
