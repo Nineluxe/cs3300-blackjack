@@ -1,0 +1,18 @@
+Web-Based Blackjack – Open Source License
+
+Copyright © 2025 Bryce Holland, Mikayla Simpson, Elijah Boyd.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and the included original assets (excluding the fonts listed below), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit others to do so.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. In no event shall the authors be liable for any claim, damages, or other liability arising from, out of, or in connection with the software or the use of the software.
+https://github.com/Nineluxe/cs3300-blackjack
+
+Third-Party Fonts and Their Licenses
+
+The following fonts are included with this project but licensed separately by their original creators:
+
+Dungeon-Mode Font – Licensed under Creative Commons Zero v1.0 Universal (CC0 1.0) - https://datagoblin.itch.io/dungeonmode
+
+Monogram Font – Licensed under Creative Commons Zero v1.0 Universal (CC0 1.0) - https://datagoblin.itch.io/monogram
+
+These fonts are not covered by the above license, but are instead governed by their respective CC0 licenses, which permit free use without restriction.
