@@ -23,5 +23,9 @@ You might need to specify the current folder for the assets to load properly
 
 Make sure pygbag and pygame versions are up to date
 
+# License
+This program is open source, with some concessions for the fonts used. Check the included license.txt file for additional information.
+To access the source code, refer to the GitHub repository: https://github.com/Nineluxe/cs3300-blackjack
+
 # Authors
 Elijah Boyd, Bryce Holland, Mikayla Simpson
