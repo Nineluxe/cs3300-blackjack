@@ -6,10 +6,8 @@ from scripts.gameController import GameController
 pygame.init()
 pygame.font.init()
 
-<<<<<<< Updated upstream
-=======
 # Main asynchronous game loop, needed to work with pygbag
->>>>>>> Stashed changes
+
 async def main():
     try:
         game = GameController()
